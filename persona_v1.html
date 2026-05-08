@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>퍼소나 카드 | 검색왕 찌질박사</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #f0f2f8;
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    header .service-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #7c83fd;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1a1a2e;
+    }
+    header p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .cards-wrapper {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      width: 480px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 상단 헤더 ── */
+    .card-header {
+      padding: 32px 32px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .card--p1 .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card--p2 .card-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      flex-shrink: 0;
+      border: 3px solid rgba(255,255,255,0.5);
+    }
+
+    .profile-info { color: #fff; }
+    .profile-info .name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .profile-info .meta {
+      font-size: 13px;
+      opacity: 0.85;
+      margin-top: 4px;
+      line-height: 1.6;
+    }
+    .tech-badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* ── 본문 ── */
+    .card-body {
+      padding: 28px 32px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .card--p1 .section-title { color: #7c83fd; }
+    .card--p2 .section-title { color: #f5576c; }
+
+    /* 목표 */
+    .goal-list { display: flex; flex-direction: column; gap: 10px; }
+    .goal-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .goal-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: #fff;
+    }
+    .card--p1 .goal-num { background: #667eea; }
+    .card--p2 .goal-num { background: #f5576c; }
+    .goal-text {
+      font-size: 14px;
+      color: #2d2d2d;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* 페인포인트 */
+    .pain-list { display: flex; flex-direction: column; gap: 14px; }
+    .pain-item {
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 14px 16px;
+      border-left: 4px solid;
+    }
+    .card--p1 .pain-item { border-color: #667eea; }
+    .card--p2 .pain-item { border-color: #f5576c; }
+
+    .pain-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 6px;
+    }
+    .evidence {
+      font-size: 11px;
+      color: #888;
+      line-height: 1.5;
+    }
+    .evidence span {
+      font-style: italic;
+      color: #555;
+    }
+    .evidence .user-tag {
+      font-style: normal;
+      font-weight: 700;
+      color: #aaa;
+    }
+
+    /* 결정적 한 마디 */
+    .quote-block {
+      border-radius: 14px;
+      padding: 18px 20px;
+      position: relative;
+    }
+    .card--p1 .quote-block { background: #f0f1ff; }
+    .card--p2 .quote-block { background: #fff0f3; }
+
+    .quote-mark {
+      font-size: 40px;
+      line-height: 1;
+      font-family: Georgia, serif;
+      position: absolute;
+      top: 8px;
+      left: 16px;
+      opacity: 0.2;
+    }
+    .card--p1 .quote-mark { color: #667eea; }
+    .card--p2 .quote-mark { color: #f5576c; }
+
+    .quote-text {
+      font-size: 14px;
+      line-height: 1.75;
+      color: #333;
+      font-weight: 500;
+      padding-left: 8px;
+      padding-top: 12px;
+    }
+
+    /* 맥락 태그 */
+    .context-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+    .card--p1 .tag { background: #eef0ff; color: #667eea; }
+    .card--p2 .tag { background: #fff0f3; color: #f5576c; }
+
+    /* 반응형 */
+    @media (max-width: 600px) {
+      .card { width: 100%; }
+      header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="service-name">검색왕 찌질박사</div>
+  <h1>서비스 타겟 퍼소나</h1>
+  <p>어피니티 다이어그램 인터뷰 (U1~U10) 기반 · 2024</p>
+</header>
+
+<div class="cards-wrapper">
+
+  <!-- ── PERSONA 1 ── -->
+  <div class="card card--p1">
+    <div class="card-header">
+      <div class="avatar">👨‍💼</div>
+      <div class="profile-info">
+        <div class="name">김지훈</div>
+        <div class="meta">
+          27세 · 마케팅 직장인 2년차<br>
+          서울 자취 · 기술 친숙도 ★★★★☆
+        </div>
+        <span class="tech-badge">바쁜 트렌드 수집가</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- 사용 맥락 -->
+      <div>
+        <div class="section-title">사용 맥락</div>
+        <div class="context-tags">
+          <span class="tag">🚇 출퇴근 지하철</span>
+          <span class="tag">☕ 아침 루틴</span>
+          <span class="tag">💼 업무 준비</span>
+          <span class="tag">💬 단톡방 대화</span>
+        </div>
+      </div>
+
+      <!-- 목표 -->
+      <div>
+        <div class="section-title">목표</div>
+        <div class="goal-list">
+          <div class="goal-item">
+            <div class="goal-num">1</div>
+            <div class="goal-text">출퇴근 30분 안에 오늘의 주요 트렌드를 <strong>플랫폼 이동 없이</strong> 한 번에 파악하고 싶다</div>
+          </div>
+          <div class="goal-item">
+            <div class="goal-num">2</div>
+            <div class="goal-text">회의나 대화에서 꺼낼 수 있는 <strong>"써먹을 수 있는 트렌드 한 마디"</strong>를 매일 챙기고 싶다</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 페인포인트 -->
+      <div>
+        <div class="section-title">페인포인트</div>
+        <div class="pain-list">
+          <div class="pain-item">
+            <div class="pain-title">😤 멀티앱 순례가 너무 피곤하다</div>
+            <div class="evidence">
+              <span>"서너개 앱을 왔다갔다 하니깐 답답하고 힘들다"</span> <span class="user-tag">— U3</span><br>
+              <span>"여러앱을 왔다갔다 하면 시간이 많이 뺏기는 느낌이 든다"</span> <span class="user-tag">— U2</span>
+            </div>
+          </div>
+          <div class="pain-item">
+            <div class="pain-title">😠 알고리즘이 엉뚱한 걸 계속 보여준다</div>
+            <div class="evidence">
+              <span>"알고리즘이 이상한 걸 추천하면 짜증이 남"</span> <span class="user-tag">— U4</span><br>
+              <span>"관심없는 광고가 섞여 있으면 바로 꺼버린다"</span> <span class="user-tag">— U8</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 결정적 한 마디 -->
+      <div>
+        <div class="section-title">결정적 한 마디</div>
+        <div class="quote-block">
+          <div class="quote-mark">"</div>
+          <div class="quote-text">아 또 인스타 켜고, 유튜브 켜고, 트위터 켜고... 그냥 다 한 곳에 있으면 안 되나? 매일 아침 30분을 이것만 하는 것 같아.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── PERSONA 2 ── -->
+  <div class="card card--p2">
+    <div class="card-header">
+      <div class="avatar">👩‍🎓</div>
+      <div class="profile-info">
+        <div class="name">박서연</div>
+        <div class="meta">
+          22세 · 대학교 3학년 (경영학과)<br>
+          부모님과 거주 · 기술 친숙도 ★★★☆☆
+        </div>
+        <span class="tech-badge">트렌드 눈팅러</span>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <!-- 사용 맥락 -->
+      <div>
+        <div class="section-title">사용 맥락</div>
+        <div class="context-tags">
+          <span class="tag">📚 강의 쉬는 시간</span>
+          <span class="tag">🍱 점심시간</span>
+          <span class="tag">👯 친구 대화 준비</span>
+          <span class="tag">📱 인스타 피드</span>
+        </div>
+      </div>
+
+      <!-- 목표 -->
+      <div>
+        <div class="section-title">목표</div>
+        <div class="goal-list">
+          <div class="goal-item">
+            <div class="goal-num">1</div>
+            <div class="goal-text">짧은 쉬는 시간에 <strong>3분 안에</strong> 오늘 친구들이 얘기할 만한 트렌드 감을 잡고 싶다</div>
+          </div>
+          <div class="goal-item">
+            <div class="goal-num">2</div>
+            <div class="goal-text">생소한 밈·신조어가 나왔을 때 <strong>바로 뜻을 알 수 있어서</strong> 대화에서 당황하지 않고 싶다</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 페인포인트 -->
+      <div>
+        <div class="section-title">페인포인트</div>
+        <div class="pain-list">
+          <div class="pain-item">
+            <div class="pain-title">😵 정보가 너무 길고 용어를 몰라서 포기하게 된다</div>
+            <div class="evidence">
+              <span>"알아듣기 힘든 말에 대한 설명이 있으면 좋겠다"</span> <span class="user-tag">— U3</span><br>
+              <span>"짧게 요약해주면 좋겠다"</span> <span class="user-tag">— U1</span>
+            </div>
+          </div>
+          <div class="pain-item">
+            <div class="pain-title">😒 관심사랑 안 맞는 정보가 계속 나와서 귀찮다</div>
+            <div class="evidence">
+              <span>"관심사와 맞지 않는 정보는 복잡하고 귀찮다"</span> <span class="user-tag">— U10</span><br>
+              <span>"너무 복잡한 기능은 없었으면 좋겠다"</span> <span class="user-tag">— U5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 결정적 한 마디 -->
+      <div>
+        <div class="section-title">결정적 한 마디</div>
+        <div class="quote-block">
+          <div class="quote-mark">"</div>
+          <div class="quote-text">트렌드를 엄청 열심히 챙기는 건 아닌데... 모르면 친구들이랑 대화할 때 혼자 멍하니 있게 되잖아요. 그냥 짧게 '이게 뭔지' 정도만 알면 충분한데, 그게 왜 이렇게 귀찮아야 하는지 모르겠어요.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

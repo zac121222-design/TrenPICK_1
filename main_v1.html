@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>트렌픽</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #7C83FD;
+      --primary-dark: #5a62f5;
+      --primary-light: #eef0ff;
+      --bg: #F0F2F8;
+      --card-bg: #ffffff;
+      --text-main: #1A1A2E;
+      --text-sub: #666;
+      --text-muted: #aaa;
+      --border: #ECEEF6;
+      --fire: #FF4D4D;
+      --safe: #2DCB8A;
+      --radius-card: 20px;
+      --radius-btn: 50px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.07);
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1A1A2E;
+      color: var(--text-main);
+      max-width: 430px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    ::-webkit-scrollbar { display: none; }
+
+    /* ═══════════════════════════════
+       SCREEN SYSTEM
+    ═══════════════════════════════ */
+    .screen {
+      position: fixed;
+      inset: 0;
+      max-width: 430px;
+      margin: 0 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ─── SPLASH ─── */
+    #screen-splash {
+      z-index: 300;
+      background: linear-gradient(160deg, #4A51D8 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #screen-splash.exit { opacity: 0; pointer-events: none; }
+
+    .splash-logo {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      margin-bottom: 20px;
+      animation: splashPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+      border: 2px solid rgba(255,255,255,0.25);
+    }
+
+    @keyframes splashPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .splash-name {
+      font-size: 26px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -1px;
+      animation: splashFade 0.5s 0.2s both;
+    }
+
+    .splash-tag {
+      font-size: 14px;
+      color: rgba(255,255,255,0.65);
+      margin-top: 8px;
+      font-weight: 500;
+      animation: splashFade 0.5s 0.35s both;
+    }
+
+    @keyframes splashFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .splash-dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 56px;
+      animation: splashFade 0.5s 0.5s both;
+    }
+
+    .splash-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      animation: dotPulse 1.2s infinite;
+    }
+
+    .splash-dot:nth-child(2) { animation-delay: 0.2s; }
+    .splash-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotPulse {
+      0%, 100% { background: rgba(255,255,255,0.35); transform: scale(1); }
+      50% { background: rgba(255,255,255,0.9); transform: scale(1.3); }
+    }
+
+    /* ─── ONBOARDING ─── */
+    #screen-onboarding {
+      z-index: 200;
+      background: var(--card-bg);
+      transform: translateY(100%);
+      transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #screen-onboarding.active { transform: translateY(0); }
+
+    .ob-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 52px 24px 0;
+    }
+
+    .ob-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ob-logo-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .ob-logo-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.3px;
+    }
+
+    .ob-skip {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px 8px;
+    }
+
+    .ob-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 24px 0;
+    }
+
+    .ob-question {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.3;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
+
+    .ob-question span { color: var(--primary); }
+
+    .ob-sub {
+      font-size: 14px;
+      color: var(--text-sub);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .ob-count-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .ob-count-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .ob-count-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .ob-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 24px;
+    }
+
+    .ob-tag {
+      padding: 10px 16px;
+      border-radius: var(--radius-btn);
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: all 0.18s;
+      user-select: none;
+    }
+
+    .ob-tag.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      box-shadow: 0 2px 10px rgba(124,131,253,0.2);
+    }
+
+    .ob-tag:active { transform: scale(0.95); }
+
+    .ob-footer {
+      padding: 16px 24px calc(24px + env(safe-area-inset-bottom));
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ob-cta {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: -0.3px;
+    }
+
+    .ob-cta:disabled {
+      background: #d0d4f0;
+      color: #aab0d8;
+      cursor: not-allowed;
+    }
+
+    .ob-cta:not(:disabled):active { opacity: 0.85; transform: scale(0.98); }
+
+    .ob-later {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px;
+    }
+
+    /* ─── HOME ─── */
+    #screen-home {
+      z-index: 10;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .home-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px 12px;
+      flex-shrink: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 8px; }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text .brand { font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; line-height: 1.1; }
+    .logo-text .tagline { font-size: 10px; color: var(--primary); font-weight: 600; letter-spacing: 0.5px; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .icon-btn:active { background: #e0e3f0; }
+
+    .noti-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: var(--fire);
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    /* Category tabs */
+    .category-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .cat-tab {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: var(--radius-btn);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+      color: var(--text-sub);
+    }
+
+    .cat-tab.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 10px rgba(124,131,253,0.35);
+    }
+
+    /* Notification banner */
+    .noti-banner {
+      margin: 8px 16px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: opacity 0.3s, max-height 0.3s, margin 0.3s, padding 0.3s;
+      overflow: hidden;
+    }
+
+    .noti-banner.hidden { max-height: 0; opacity: 0; padding: 0; margin-top: 0; margin-bottom: 0; pointer-events: none; }
+    .noti-banner-icon { font-size: 24px; flex-shrink: 0; }
+    .noti-banner-text { flex: 1; }
+    .noti-banner-text .nb-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 2px; }
+    .noti-banner-text .nb-title { font-size: 14px; font-weight: 700; color: white; line-height: 1.3; }
+    .noti-banner-arrow { color: rgba(255,255,255,0.7); font-size: 20px; font-weight: 300; }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 10px;
+    }
+
+    .section-title { display: flex; align-items: center; gap: 8px; }
+    .section-title h2 { font-size: 18px; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #fff0f0;
+      color: var(--fire);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--fire);
+      border-radius: 50%;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .update-time { font-size: 11px; color: var(--text-muted); }
+
+    /* Trend cards */
+    .cards-list { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 100px; }
+
+    .trend-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .trend-card:active { transform: scale(0.98); }
+
+    .card-rank-bar { height: 4px; width: 100%; }
+    .rank-1 { background: linear-gradient(90deg, #FF4D4D, #FF8C42); }
+    .rank-2 { background: linear-gradient(90deg, #FF6B9D, #FF9E7D); }
+    .rank-3 { background: linear-gradient(90deg, #7C83FD, #A78BFA); }
+    .rank-4 { background: linear-gradient(90deg, #2DCB8A, #06C9CC); }
+    .rank-5 { background: linear-gradient(90deg, #FFB830, #FFDD6B); }
+    .rank-other { background: linear-gradient(90deg, #d0d4f8, #e0e3fb); }
+
+    .card-inner { padding: 16px 18px 14px; }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .card-meta { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+
+    .rank-num { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1; min-width: 26px; flex-shrink: 0; }
+    .rank-num.hot { color: var(--fire); }
+
+    .card-title-wrap { flex: 1; min-width: 0; }
+
+    .card-category-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .card-title { font-size: 16px; font-weight: 800; color: var(--text-main); line-height: 1.3; letter-spacing: -0.3px; }
+
+    .tooltip-word { border-bottom: 2px dashed var(--primary); cursor: pointer; }
+
+    .heat-score { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; margin-left: 8px; }
+    .heat-fires { font-size: 14px; letter-spacing: -2px; }
+    .heat-label { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+
+    .summary-lines { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .summary-line { display: flex; gap: 8px; align-items: flex-start; }
+    .line-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+    .line-text { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+    .line-text.tip { color: var(--primary-dark); font-weight: 600; }
+
+    .card-bottom { display: flex; align-items: center; justify-content: space-between; }
+
+    .platform-badges { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+
+    .platform-badge:active { opacity: 0.7; }
+    .badge-insta  { background: #fff0f3; color: #E1306C; }
+    .badge-youtube{ background: #fff2f2; color: #FF0000; }
+    .badge-twitter{ background: #f0f8ff; color: #1DA1F2; }
+    .badge-naver  { background: #f0fff5; color: #03C75A; }
+    .badge-musinsa{ background: #f5f0ff; color: #7C4DFF; }
+
+    .why-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+
+    .why-label:active { background: var(--primary-light); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 4px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-icon { font-size: 22px; line-height: 1; }
+    .nav-label { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+    .nav-item.active .nav-label { color: var(--primary); }
+    .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px rgba(124,131,253,0.5)); }
+
+    .nav-noti {
+      position: absolute;
+      top: 4px;
+      right: calc(50% - 18px);
+      width: 8px;
+      height: 8px;
+      background: var(--fire);
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    /* ─── DETAIL SCREEN ─── */
+    #screen-detail {
+      z-index: 50;
+      background: var(--bg);
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #screen-detail.active { transform: translateX(0); }
+
+    .detail-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .detail-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      padding: 4px 0;
+    }
+
+    .detail-back-arrow { font-size: 20px; line-height: 1; }
+
+    .detail-share {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
+
+    .detail-share:active { background: var(--primary-light); }
+
+    .detail-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 40px;
+    }
+
+    .detail-hero {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 20px 0;
+      overflow: hidden;
+    }
+
+    .detail-rank-bar { height: 5px; margin: -20px -20px 20px; }
+
+    .detail-cat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .detail-rank-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-rank-num {
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .detail-rank-num.hot { color: var(--fire); }
+    .detail-rank-num.normal { color: var(--primary); }
+
+    .detail-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.35;
+      letter-spacing: -0.8px;
+      margin-bottom: 14px;
+    }
+
+    .detail-heat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff5f5;
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .detail-heat .fires { font-size: 16px; letter-spacing: -2px; }
+    .detail-heat .hlabel { font-size: 12px; font-weight: 700; color: var(--fire); }
+
+    /* Detail sections */
+    .detail-section {
+      background: var(--card-bg);
+      margin: 10px 0 0;
+      padding: 20px;
+    }
+
+    .detail-section-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* Summary section */
+    .detail-summary { display: flex; flex-direction: column; gap: 10px; }
+
+    .detail-summary-line {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--bg);
+    }
+
+    .detail-summary-line:last-child {
+      background: var(--primary-light);
+    }
+
+    .dsl-icon { font-size: 16px; flex-shrink: 0; }
+    .dsl-label { font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .dsl-text { font-size: 14px; color: var(--text-sub); line-height: 1.55; }
+    .dsl-text.tip { color: var(--primary-dark); font-weight: 700; font-size: 14px; }
+
+    /* Context section */
+    .detail-context-text {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.8;
+    }
+
+    /* Platforms section */
+    .detail-platform-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .detail-platform-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .detail-platform-btn:active { opacity: 0.8; transform: scale(0.97); }
+
+    /* Reactions section */
+    .reactions-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .reaction-item {
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .reaction-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .reaction-platform {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .reaction-likes {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--fire);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .reaction-text {
+      font-size: 14px;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    /* CTA button */
+    .detail-cta {
+      margin: 16px 20px 0;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      width: calc(100% - 40px);
+      display: block;
+      text-align: center;
+      letter-spacing: -0.3px;
+      transition: opacity 0.15s;
+    }
+
+    .detail-cta:active { opacity: 0.85; }
+
+    /* ═══════════════════════════════
+       GLOBAL OVERLAYS
+    ═══════════════════════════════ */
+
+    /* Tooltip */
+    .tooltip-popup {
+      display: none;
+      position: fixed;
+      background: #1A1A2E;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 260px;
+      z-index: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+
+    .tooltip-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      border: 6px solid transparent;
+      border-top-color: #1A1A2E;
+    }
+
+    .tooltip-popup .tt-word { font-weight: 800; color: #a8b4ff; margin-bottom: 2px; display: block; }
+
+    /* Why modal */
+    .why-modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 400;
+      backdrop-filter: blur(2px);
+      max-width: 430px;
+      margin: 0 auto;
+    }
+
+    .why-modal {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 24px 24px 0 0;
+      padding: 20px 24px calc(32px + env(safe-area-inset-bottom));
+    }
+
+    .modal-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; }
+
+    .why-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .why-item:last-child { border-bottom: none; }
+
+    .why-item-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .wi-label { font-size: 11px; color: var(--primary); font-weight: 700; margin-bottom: 2px; }
+    .wi-desc  { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+
+    .modal-close {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modal-close:active { opacity: 0.85; }
+
+    /* ═══ TAB SYSTEM ═══ */
+    #screen-home { display: flex; flex-direction: column; overflow: hidden; }
+    .tab-screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .tab-screen.active { display: flex; }
+    .tab-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+    .tab-header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .tab-header-title { font-size: 20px; font-weight: 900; color: var(--text-main); letter-spacing: -0.5px; }
+    .tab-header-btn {
+      font-size: 13px; font-weight: 600; color: var(--primary);
+      background: none; border: none; cursor: pointer; padding: 4px 8px;
+    }
+
+    /* ═══ 탐색 TAB ═══ */
+    .explore-search {
+      margin: 14px 16px;
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg); border-radius: var(--radius-btn);
+      padding: 12px 16px; border: 2px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .explore-search:focus-within { border-color: var(--primary); }
+    .explore-search input {
+      flex: 1; background: none; border: none; outline: none;
+      font-size: 15px; color: var(--text-main); font-family: inherit;
+    }
+    .explore-search input::placeholder { color: var(--text-muted); }
+
+    .explore-section-label {
+      font-size: 15px; font-weight: 800; color: var(--text-main);
+      padding: 6px 16px 12px; letter-spacing: -0.3px;
+    }
+
+    .cat-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 16px 20px;
+    }
+    .cat-card {
+      border-radius: 16px; padding: 18px 16px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 6px;
+      transition: transform 0.15s; border: none; text-align: left;
+    }
+    .cat-card:active { transform: scale(0.97); }
+    .cat-card-icon  { font-size: 28px; line-height: 1; }
+    .cat-card-name  { font-size: 14px; font-weight: 800; color: white; }
+    .cat-card-count { font-size: 11px; color: rgba(255,255,255,0.75); font-weight: 600; }
+
+    .trending-kw-list { padding: 0 16px 32px; display: flex; flex-direction: column; gap: 8px; }
+    .kw-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; background: var(--card-bg);
+      border-radius: 14px; cursor: pointer; box-shadow: var(--shadow);
+      transition: background 0.15s;
+    }
+    .kw-item:active { background: var(--primary-light); }
+    .kw-rank { font-size: 16px; font-weight: 900; color: var(--primary); min-width: 22px; }
+    .kw-rank.hot { color: var(--fire); }
+    .kw-text { flex: 1; font-size: 15px; font-weight: 700; color: var(--text-main); }
+    .kw-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    }
+    .kw-up   { color: var(--fire); background: #fff0f0; }
+    .kw-new  { color: var(--safe); background: #f0fff8; }
+    .kw-stay { color: var(--text-muted); background: var(--bg); }
+
+    /* ═══ 알림 TAB ═══ */
+    .noti-date-label {
+      font-size: 12px; font-weight: 700; color: var(--text-muted);
+      padding: 14px 20px 6px; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .noti-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 20px; background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .noti-item.unread { background: #f8f9ff; }
+    .noti-item:active { background: var(--bg); }
+    .noti-ico {
+      width: 42px; height: 42px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .ico-fire   { background: #fff0f0; }
+    .ico-bell   { background: var(--primary-light); }
+    .ico-chart  { background: #f0fff8; }
+    .ico-report { background: #fffbf0; }
+    .noti-body  { flex: 1; min-width: 0; }
+    .noti-title { font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 2px; line-height: 1.4; }
+    .noti-sub   { font-size: 12px; color: var(--text-sub); }
+    .noti-meta  { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .noti-time  { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    .unread-dot { width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+
+    /* ═══ 설정 TAB ═══ */
+    .settings-profile {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 28px 24px 24px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .settings-avatar {
+      width: 60px; height: 60px;
+      background: rgba(255,255,255,0.2); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0;
+    }
+    .settings-info { flex: 1; }
+    .settings-name { font-size: 18px; font-weight: 800; color: white; margin-bottom: 3px; }
+    .settings-sub  { font-size: 13px; color: rgba(255,255,255,0.7); }
+    .settings-edit {
+      padding: 7px 14px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px; color: white; font-size: 12px; font-weight: 700;
+      cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+    }
+    .settings-edit:active { background: rgba(255,255,255,0.35); }
+
+    .settings-section { background: var(--card-bg); margin-top: 10px; }
+    .settings-section-label {
+      font-size: 12px; font-weight: 700; color: var(--text-muted);
+      padding: 14px 20px 6px; letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .settings-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row:active { background: var(--bg); }
+    .settings-row-ico {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .settings-row-body { flex: 1; }
+    .settings-row-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .settings-row-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .settings-row-right { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .settings-row-arrow { font-size: 18px; color: #ccc; }
+
+    .my-tags { padding: 10px 20px 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .my-tag {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      background: var(--primary-light); color: var(--primary-dark);
+    }
+    .my-tag-add {
+      padding: 6px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; background: var(--bg);
+      color: var(--text-muted); border: 2px dashed var(--border); cursor: pointer;
+    }
+
+    /* Toggle */
+    .toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+    .toggle input { display: none; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #d0d5e8; border-radius: 26px; cursor: pointer;
+      transition: background 0.25s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 20px; height: 20px; left: 3px; top: 3px;
+      background: white; border-radius: 50%;
+      transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .toggle-track { background: var(--primary); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(18px); }
+
+    /* ── 반응형 ── */
+    @media (max-width: 390px) {
+      .card-title { font-size: 15px; }
+      .ob-question { font-size: 21px; }
+    }
+
+    @media (min-width: 430px) {
+      body { box-shadow: 0 0 60px rgba(0,0,0,0.18); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     SCREEN 1: SPLASH
+════════════════════════════════ -->
+<div id="screen-splash" class="screen">
+  <div class="splash-logo">🔍</div>
+  <div class="splash-name">트렌픽</div>
+  <div class="splash-tag">오늘 트렌드, 한 번에</div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN 2: ONBOARDING
+════════════════════════════════ -->
+<div id="screen-onboarding" class="screen">
+  <div class="ob-header">
+    <div class="ob-logo">
+      <div class="ob-logo-icon">🔍</div>
+      <span class="ob-logo-name">트렌픽</span>
+    </div>
+    <button class="ob-skip" onclick="goHome()">건너뛰기</button>
+  </div>
+
+  <div class="ob-body">
+    <h1 class="ob-question">어떤 트렌드에<br><span>관심 있어요?</span></h1>
+    <p class="ob-sub">관심사를 선택하면 맞춤 트렌드를 바로 보여드려요.<br>나중에 언제든 바꿀 수 있어요.</p>
+
+    <div class="ob-count-bar">
+      <span class="ob-count-label">최소 1개 · 최대 5개</span>
+      <span class="ob-count-badge" id="obCount">0 / 5 선택</span>
+    </div>
+
+    <div class="ob-tags" id="obTags">
+      <button class="ob-tag" data-cat="패션">👗 패션</button>
+      <button class="ob-tag" data-cat="맛집">🍜 맛집</button>
+      <button class="ob-tag" data-cat="밈/인터넷문화">😂 밈/인터넷</button>
+      <button class="ob-tag" data-cat="팝업스토어">🏪 팝업스토어</button>
+      <button class="ob-tag" data-cat="뷰티">💄 뷰티</button>
+      <button class="ob-tag" data-cat="음악">🎵 음악</button>
+      <button class="ob-tag" data-cat="게임">🎮 게임</button>
+      <button class="ob-tag" data-cat="드라마/영화">🎬 드라마/영화</button>
+      <button class="ob-tag" data-cat="스포츠">⚽ 스포츠</button>
+      <button class="ob-tag" data-cat="키덜트">🧸 키덜트</button>
+      <button class="ob-tag" data-cat="테크/IT">💻 테크/IT</button>
+      <button class="ob-tag" data-cat="여행">✈️ 여행</button>
+    </div>
+  </div>
+
+  <div class="ob-footer">
+    <button class="ob-cta" id="obCta" disabled onclick="goHome()">시작하기</button>
+    <button class="ob-later" onclick="goHome()">나중에 설정할게요</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN 3: HOME (탭 앱 셸)
+════════════════════════════════ -->
+<div id="screen-home" class="screen">
+
+  <!-- ── TAB: 홈 ── -->
+  <div id="tab-home" class="tab-screen active">
+    <header class="header">
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">🔍</div>
+          <div class="logo-text">
+            <span class="brand">트렌픽</span>
+            <span class="tagline">오늘 트렌드, 한 번에</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="switchNavById('tab-explore', 1)">🔎</button>
+          <button class="icon-btn" onclick="switchNavById('tab-notifications', 2)">
+            🔔
+            <span class="noti-dot"></span>
+          </button>
+        </div>
+      </div>
+      <div class="category-scroll">
+        <button class="cat-tab active" onclick="selectCat(this)">전체</button>
+        <button class="cat-tab" onclick="selectCat(this)">👗 패션</button>
+        <button class="cat-tab" onclick="selectCat(this)">🍜 맛집</button>
+        <button class="cat-tab" onclick="selectCat(this)">😂 밈</button>
+        <button class="cat-tab" onclick="selectCat(this)">🏪 팝업</button>
+        <button class="cat-tab" onclick="selectCat(this)">💄 뷰티</button>
+        <button class="cat-tab" onclick="selectCat(this)">🎵 음악</button>
+        <button class="cat-tab" onclick="selectCat(this)">🎮 게임</button>
+        <button class="cat-tab" onclick="selectCat(this)">🎬 드라마</button>
+      </div>
+    </header>
+    <div class="tab-scroll">
+      <div class="noti-banner" id="notiBanner" onclick="this.classList.add('hidden')">
+        <div class="noti-banner-icon">🔔</div>
+        <div class="noti-banner-text">
+          <div class="nb-label">트렌드 알림</div>
+          <div class="nb-title">패션 트렌드 3개 업데이트됨 · 오전 8:00</div>
+        </div>
+        <span class="noti-banner-arrow">›</span>
+      </div>
+      <div class="section-header">
+        <div class="section-title">
+          <h2>오늘의 트렌드</h2>
+          <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+        </div>
+        <span class="update-time">10분 전 업데이트</span>
+      </div>
+      <div class="cards-list" id="cardsList"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: 탐색 ── -->
+  <div id="tab-explore" class="tab-screen">
+    <div class="tab-header">
+      <span class="tab-header-title">탐색</span>
+    </div>
+    <div class="tab-scroll">
+      <div class="explore-search">
+        <span style="font-size:18px">🔍</span>
+        <input type="text" placeholder="트렌드 검색하기..." />
+      </div>
+
+      <div class="explore-section-label">카테고리로 탐색</div>
+      <div class="cat-grid">
+        <button class="cat-card" style="background:linear-gradient(135deg,#f093fb,#f5576c)">
+          <span class="cat-card-icon">👗</span>
+          <span class="cat-card-name">패션</span>
+          <span class="cat-card-count">트렌드 24개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#f7971e,#ffd200)">
+          <span class="cat-card-icon">🍜</span>
+          <span class="cat-card-name">맛집</span>
+          <span class="cat-card-count">트렌드 18개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#667eea,#764ba2)">
+          <span class="cat-card-icon">😂</span>
+          <span class="cat-card-name">밈/인터넷</span>
+          <span class="cat-card-count">트렌드 31개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">
+          <span class="cat-card-icon">🏪</span>
+          <span class="cat-card-name">팝업스토어</span>
+          <span class="cat-card-count">트렌드 9개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#fd79a8,#e84393)">
+          <span class="cat-card-icon">💄</span>
+          <span class="cat-card-name">뷰티</span>
+          <span class="cat-card-count">트렌드 15개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">
+          <span class="cat-card-icon">🎵</span>
+          <span class="cat-card-name">음악</span>
+          <span class="cat-card-count">트렌드 22개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#11998e,#38ef7d)">
+          <span class="cat-card-icon">🎮</span>
+          <span class="cat-card-name">게임</span>
+          <span class="cat-card-count">트렌드 12개</span>
+        </button>
+        <button class="cat-card" style="background:linear-gradient(135deg,#fc4a1a,#f7b733)">
+          <span class="cat-card-icon">🎬</span>
+          <span class="cat-card-name">드라마/영화</span>
+          <span class="cat-card-count">트렌드 19개</span>
+        </button>
+      </div>
+
+      <div class="explore-section-label">지금 뜨는 검색어</div>
+      <div class="trending-kw-list">
+        <div class="kw-item"><span class="kw-rank hot">1</span><span class="kw-text">먹태깡 챌린지</span><span class="kw-badge kw-up">▲ 3</span></div>
+        <div class="kw-item"><span class="kw-rank hot">2</span><span class="kw-text">레이어드 룩 코디</span><span class="kw-badge kw-new">NEW</span></div>
+        <div class="kw-item"><span class="kw-rank">3</span><span class="kw-text">젠틀몬스터 팝업</span><span class="kw-badge kw-up">▲ 5</span></div>
+        <div class="kw-item"><span class="kw-rank">4</span><span class="kw-text">하입보이 역주행</span><span class="kw-badge kw-stay">— 유지</span></div>
+        <div class="kw-item"><span class="kw-rank">5</span><span class="kw-text">저칼로리 마라탕</span><span class="kw-badge kw-up">▲ 2</span></div>
+        <div class="kw-item"><span class="kw-rank">6</span><span class="kw-text">아스트라 리워크</span><span class="kw-badge kw-new">NEW</span></div>
+        <div class="kw-item"><span class="kw-rank">7</span><span class="kw-text">봄 뷰티 루틴</span><span class="kw-badge kw-stay">— 유지</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: 알림 ── -->
+  <div id="tab-notifications" class="tab-screen">
+    <div class="tab-header">
+      <span class="tab-header-title">알림</span>
+      <button class="tab-header-btn" onclick="markAllRead()">모두 읽음</button>
+    </div>
+    <div class="tab-scroll">
+      <div class="noti-date-label">오늘</div>
+
+      <div class="noti-item unread">
+        <div class="noti-ico ico-fire">🔥</div>
+        <div class="noti-body">
+          <div class="noti-title">패션 트렌드 3개 새로 추가됐어요</div>
+          <div class="noti-sub">레이어드 룩 포함 봄 시즌 트렌드 업데이트</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">10분 전</span>
+          <span class="unread-dot"></span>
+        </div>
+      </div>
+
+      <div class="noti-item unread">
+        <div class="noti-ico ico-bell">🔔</div>
+        <div class="noti-body">
+          <div class="noti-title">등록 키워드 "밈" 트렌드 1위 진입</div>
+          <div class="noti-sub">먹태깡 챌린지가 1위로 올라섰어요</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">1시간 전</span>
+          <span class="unread-dot"></span>
+        </div>
+      </div>
+
+      <div class="noti-item unread">
+        <div class="noti-ico ico-chart">📈</div>
+        <div class="noti-body">
+          <div class="noti-title">관심 트렌드 "먹태깡 챌린지" 1위 달성</div>
+          <div class="noti-sub">지난 1시간 동안 검색량 320% 급증</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">2시간 전</span>
+          <span class="unread-dot"></span>
+        </div>
+      </div>
+
+      <div class="noti-item">
+        <div class="noti-ico ico-fire">🌅</div>
+        <div class="noti-body">
+          <div class="noti-title">오늘의 트렌드 스냅샷 업데이트됐어요</div>
+          <div class="noti-sub">총 6개 트렌드 · 지금 확인해보세요</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">오전 8:00</span>
+        </div>
+      </div>
+
+      <div class="noti-date-label">어제</div>
+
+      <div class="noti-item">
+        <div class="noti-ico ico-report">📊</div>
+        <div class="noti-body">
+          <div class="noti-title">이번 주 인기 트렌드 TOP 10 준비됐어요</div>
+          <div class="noti-sub">패션·밈·음악이 이번 주 핵심 카테고리</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">오후 6:00</span>
+        </div>
+      </div>
+
+      <div class="noti-item">
+        <div class="noti-ico ico-bell">🔔</div>
+        <div class="noti-body">
+          <div class="noti-title">등록 키워드 "패션" 급상승 감지</div>
+          <div class="noti-sub">레이어드 룩 관련 트렌드가 떠오르고 있어요</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">오전 9:00</span>
+        </div>
+      </div>
+
+      <div class="noti-item">
+        <div class="noti-ico ico-chart">📈</div>
+        <div class="noti-body">
+          <div class="noti-title">젠틀몬스터 팝업 화제 급상승</div>
+          <div class="noti-sub">인스타그램 인증샷 5천 건 돌파</div>
+        </div>
+        <div class="noti-meta">
+          <span class="noti-time">오전 7:30</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: 설정 ── -->
+  <div id="tab-settings" class="tab-screen">
+    <div class="tab-scroll">
+      <!-- 프로필 -->
+      <div class="settings-profile">
+        <div class="settings-avatar">🙂</div>
+        <div class="settings-info">
+          <div class="settings-name">트렌픽 유저</div>
+          <div class="settings-sub">관심사 3개 선택됨</div>
+        </div>
+        <button class="settings-edit" onclick="goOnboarding()">편집</button>
+      </div>
+
+      <!-- 내 관심사 -->
+      <div class="settings-section">
+        <div class="settings-section-label">내 관심사</div>
+        <div class="my-tags">
+          <span class="my-tag">👗 패션</span>
+          <span class="my-tag">😂 밈</span>
+          <span class="my-tag">🎵 음악</span>
+          <button class="my-tag-add" onclick="goOnboarding()">+ 추가</button>
+        </div>
+      </div>
+
+      <!-- 알림 설정 -->
+      <div class="settings-section">
+        <div class="settings-section-label">알림 설정</div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:#fff0f0">🔥</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">트렌드 알림</div>
+            <div class="settings-row-sub">새 트렌드 업데이트 시 알림</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:var(--primary-light)">🔔</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">키워드 알림</div>
+            <div class="settings-row-sub">등록 키워드 트렌드 진입 시 알림</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:#f0fff8">⏰</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">알림 시간대</div>
+            <div class="settings-row-sub">매일 오전 8:00 고정</div>
+          </div>
+          <div class="settings-row-right">오전 8:00 <span class="settings-row-arrow">›</span></div>
+        </div>
+      </div>
+
+      <!-- 앱 설정 -->
+      <div class="settings-section">
+        <div class="settings-section-label">앱 설정</div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:#f5f0ff">🌙</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">다크 모드</div>
+            <div class="settings-row-sub">화면 밝기 설정</div>
+          </div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:#fff8f0">🌐</div>
+          <div class="settings-row-body">
+            <div class="settings-row-label">언어</div>
+          </div>
+          <div class="settings-row-right">한국어 <span class="settings-row-arrow">›</span></div>
+        </div>
+      </div>
+
+      <!-- 앱 정보 -->
+      <div class="settings-section">
+        <div class="settings-section-label">앱 정보</div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:var(--bg)">💬</div>
+          <div class="settings-row-body"><div class="settings-row-label">피드백 보내기</div></div>
+          <div class="settings-row-right"><span class="settings-row-arrow">›</span></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:var(--bg)">📄</div>
+          <div class="settings-row-body"><div class="settings-row-label">개인정보처리방침</div></div>
+          <div class="settings-row-right"><span class="settings-row-arrow">›</span></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-ico" style="background:var(--bg)">📋</div>
+          <div class="settings-row-body"><div class="settings-row-label">서비스 이용약관</div></div>
+          <div class="settings-row-right"><span class="settings-row-arrow">›</span></div>
+        </div>
+        <div class="settings-row" style="cursor:default">
+          <div class="settings-row-ico" style="background:linear-gradient(135deg,#667eea,#764ba2)">🔍</div>
+          <div class="settings-row-body"><div class="settings-row-label">트렌픽</div></div>
+          <div class="settings-row-right" style="color:var(--text-muted)">v1.0.0</div>
+        </div>
+      </div>
+      <div style="height:32px"></div>
+    </div>
+  </div>
+
+  <!-- ── 공유 하단 네비게이션 ── -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-0" onclick="switchNav(this,'tab-home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">홈</span>
+    </button>
+    <button class="nav-item" id="nav-1" onclick="switchNav(this,'tab-explore')">
+      <span class="nav-icon">🧭</span>
+      <span class="nav-label">탐색</span>
+    </button>
+    <button class="nav-item" id="nav-2" onclick="switchNav(this,'tab-notifications')">
+      <span class="nav-icon">🔔</span>
+      <span class="nav-label">알림</span>
+      <span class="nav-noti" id="notiDot"></span>
+    </button>
+    <button class="nav-item" id="nav-3" onclick="switchNav(this,'tab-settings')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">설정</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════
+     SCREEN 4: DETAIL
+════════════════════════════════ -->
+<div id="screen-detail" class="screen">
+  <div class="detail-header">
+    <button class="detail-back" onclick="closeDetail()">
+      <span class="detail-back-arrow">‹</span>
+      트렌드 상세
+    </button>
+    <button class="detail-share" onclick="shareCard()">↗️</button>
+  </div>
+  <div class="detail-scroll" id="detailScroll"></div>
+</div>
+
+<!-- ════════════════════════════════
+     GLOBAL OVERLAYS
+════════════════════════════════ -->
+<div class="tooltip-popup" id="tooltipPopup"></div>
+
+<div class="why-modal-bg" id="whyModalBg" onclick="closeWhy()">
+  <div class="why-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">왜 이 트렌드가 보이나요?</div>
+    <div id="whyContent"></div>
+    <button class="modal-close" onclick="closeWhy()">확인했어요</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   CARD DATA
+════════════════════════════════ */
+const CARDS = [
+  {
+    id: 0, rank: 1, rankClass: 'rank-1', hot: true,
+    category: '밈/인터넷문화', catColor: '',
+    titleHtml: '<span class="tooltip-word" data-word="먹태깡 챌린지" data-desc="먹태깡은 농심이 출시한 과자 이름이에요. 챌린지는 SNS에서 따라 하는 영상 릴레이예요.">먹태깡 챌린지</span>',
+    titlePlain: '먹태깡 챌린지',
+    heat: '🔥🔥🔥', heatLabel: '매우 뜨거움',
+    s1: { icon: '📌', text: '농심 신제품 과자를 먹으며 반응하는 영상 릴레이', tip: false },
+    s2: { icon: '🚀', text: '틱톡·릴스에서 3일 만에 10만 뷰 돌파하며 급확산', tip: false },
+    s3: { icon: '💬', text: '"요즘 먹태깡 챌린지 봤어? 반응 진짜 웃기더라"', tip: true },
+    platforms: [
+      { cls: 'badge-insta',   label: '📸 인스타' },
+      { cls: 'badge-youtube', label: '▶ 유튜브'  },
+    ],
+    whyCat: '밈/인터넷문화',
+    context: '농심이 출시한 신제품 "먹태깡"을 처음 먹으며 리액션하는 영상이 틱톡·인스타 릴스에서 릴레이 형태로 확산되고 있어요. 유명 인플루언서들이 동참하며 3일 만에 10만 뷰를 돌파했고, 제품은 온라인 쇼핑몰에서 일시 품절 상태예요. MZ세대 중심으로 "처음 먹는 표정 챌린지" 포맷이 확산 중이에요.',
+    reactions: [
+      { platform: '📸 인스타', text: '처음 먹는 표정 진짜 공감됨 ㅋㅋ 저도 찍어봤는데 맞아요', likes: '4.2만' },
+      { platform: '▶ 유튜브',  text: '솔직히 맛있어 보여서 주문했는데 이미 품절ㅋㅋㅋ 농심 주가 갈 것 같다', likes: '2.8만' },
+      { platform: '𝕏 트위터',  text: '먹태깡 챌린지 3일 만에 10만뷰... 농심 마케팅팀 진짜 잘하는 듯', likes: '1.5만' },
+    ],
+  },
+  {
+    id: 1, rank: 2, rankClass: 'rank-2', hot: false,
+    category: '패션', catColor: '',
+    titleHtml: '<span class="tooltip-word" data-word="레이어드 룩" data-desc="여러 겹의 옷을 겹쳐 입는 스타일링이에요. 봄·가을에 특히 유행해요.">레이어드 룩</span> 2026 봄 트렌드',
+    titlePlain: '레이어드 룩 2026 봄 트렌드',
+    heat: '🔥🔥', heatLabel: '뜨거움',
+    s1: { icon: '📌', text: '얇은 긴팔 위에 민소매 덧입는 겹쳐입기 코디가 주목', tip: false },
+    s2: { icon: '🚀', text: '무신사·인스타 패션 계정 동시 급상승, 관련 상품 품절', tip: false },
+    s3: { icon: '💬', text: '"이번 봄엔 레이어드 룩이 핵심이래, 긴팔에 슬리브리스 겹쳐봐"', tip: true },
+    platforms: [
+      { cls: 'badge-musinsa', label: '🛍 무신사' },
+      { cls: 'badge-insta',   label: '📸 인스타'  },
+    ],
+    whyCat: '패션',
+    context: '2026년 봄 시즌 패션 트렌드로 "레이어드 룩"이 강세예요. 얇은 긴팔 티셔츠 위에 민소매나 크롭 탑을 덧입는 스타일링이 무신사, 인스타그램 패션 계정에서 동시에 급상승 중이에요. 관련 상품은 이미 여러 브랜드에서 품절 사태가 이어지고 있어요.',
+    reactions: [
+      { platform: '🛍 무신사',  text: '레이어드 코디 조합 진짜 예쁘다. 구매 완료했습니다', likes: '3.1만' },
+      { platform: '📸 인스타',  text: '봄에 이 스타일 진짜 잘 어울리겠다... 장바구니 담았음', likes: '2.4만' },
+      { platform: '𝕏 트위터',  text: '작년에 이미 유행했던 것 같은데 올해 또 오는구나 패션 사이클', likes: '9.8천' },
+    ],
+  },
+  {
+    id: 2, rank: 3, rankClass: 'rank-3', hot: false,
+    category: '팝업스토어', catColor: '',
+    titleHtml: '젠틀몬스터 × 블랙핑크 팝업',
+    titlePlain: '젠틀몬스터 × 블랙핑크 팝업',
+    heat: '🔥🔥', heatLabel: '뜨거움',
+    s1: { icon: '📌', text: '성수동 젠틀몬스터 팝업, 블랙핑크 컬래버 한정판 전시·판매', tip: false },
+    s2: { icon: '🚀', text: '오픈 당일 4시간 대기 행렬, SNS 인증샷 폭발', tip: false },
+    s3: { icon: '💬', text: '"젠틀몬스터 팝업 줄 엄청 길대, 주말 가려면 예약 필수래"', tip: true },
+    platforms: [
+      { cls: 'badge-insta',   label: '📸 인스타' },
+      { cls: 'badge-twitter', label: '𝕏 트위터'  },
+    ],
+    whyCat: '팝업스토어',
+    context: '서울 성수동 젠틀몬스터 플래그십에서 블랙핑크 멤버들과 컬래버레이션한 한정판 선글라스를 전시·판매 중이에요. 오픈 당일부터 최대 4시간의 대기 행렬이 형성됐으며, 방문객 인증샷이 인스타그램과 트위터에서 폭발적으로 공유되고 있어요. 특히 제니 에디션은 오픈 30분 만에 매진됐어요.',
+    reactions: [
+      { platform: '📸 인스타',  text: '오늘 다녀왔는데 줄 엄청났음. 그래도 경험 자체는 최고', likes: '5.6만' },
+      { platform: '𝕏 트위터',  text: '제니 에디션 오픈 30분 만에 품절... 리셀 가격 벌써 3배 ㅠㅠ', likes: '3.2만' },
+      { platform: '▶ 유튜브',  text: '팝업 브이로그 올렸는데 조회수 이틀 만에 50만 넘었어요', likes: '1.8만' },
+    ],
+  },
+  {
+    id: 3, rank: 4, rankClass: 'rank-4', hot: false,
+    category: '음악', catColor: '',
+    titleHtml: '<span class="tooltip-word" data-word="하입보이" data-desc="뉴진스의 히트곡 \'Hype Boy\'의 한국어 표기예요. 틱톡 댄스 챌린지로 역주행 중이에요.">하입보이</span> 역주행 챌린지',
+    titlePlain: '하입보이 역주행 챌린지',
+    heat: '🔥', heatLabel: '상승 중',
+    s1: { icon: '📌', text: "뉴진스 'Hype Boy' 틱톡 커버 댄스가 다시 바이럴", tip: false },
+    s2: { icon: '🚀', text: '일본·동남아 계정이 릴레이 참여하며 글로벌 확산 중', tip: false },
+    s3: { icon: '💬', text: '"하입보이 또 뜨고 있대, K팝 역주행 진짜 대단하다"', tip: true },
+    platforms: [
+      { cls: 'badge-youtube', label: '▶ 유튜브'  },
+      { cls: 'badge-twitter', label: '𝕏 트위터'  },
+    ],
+    whyCat: '음악',
+    context: "뉴진스의 데뷔곡 'Hype Boy(하입보이)'가 다시 한번 글로벌 바이럴을 타고 있어요. 일본과 동남아 크리에이터들의 커버 댄스 영상이 연이어 등장하며 틱톡 트렌딩에 재진입했어요. K팝 역주행 현상의 전형적인 패턴을 보여주고 있으며, 관련 스트리밍 수치도 빠르게 상승 중이에요.",
+    reactions: [
+      { platform: '▶ 유튜브',  text: '진짜 K팝 역주행은 끝이 없네... 뉴진스 글로벌 팬덤 어마어마하다', likes: '4.1만' },
+      { platform: '𝕏 트위터',  text: '일본에서 커버 영상 릴레이 올라오는 거 보면 진짜 한류 살아있음', likes: '2.9만' },
+      { platform: '📸 인스타',  text: '이 노래는 언제 들어도 기분 좋아짐. 역주행 당연하지', likes: '2.1만' },
+    ],
+  },
+  {
+    id: 4, rank: 5, rankClass: 'rank-5', hot: false,
+    category: '맛집', catColor: '',
+    titleHtml: '마라탕 2.0 — 저칼로리 마라',
+    titlePlain: '마라탕 2.0 — 저칼로리 마라',
+    heat: '🔥', heatLabel: '상승 중',
+    s1: { icon: '📌', text: '기름 대신 육수 베이스로 만든 다이어트 마라탕 인기', tip: false },
+    s2: { icon: '🚀', text: '칼로리 1/3로 줄인 레시피가 네이버 블로그에서 5만 공유', tip: false },
+    s3: { icon: '💬', text: '"마라탕 다이어트 버전 있대, 맛은 비슷하고 칼로리 확 낮대"', tip: true },
+    platforms: [
+      { cls: 'badge-naver', label: 'N 네이버' },
+      { cls: 'badge-insta', label: '📸 인스타' },
+    ],
+    whyCat: '맛집',
+    context: '봄 다이어트 시즌을 맞아 기름을 최소화하고 사골 육수 베이스로 끓이는 "저칼로리 마라탕" 레시피가 네이버 블로그와 인스타그램에서 급속 확산 중이에요. 기존 마라탕 대비 칼로리를 약 60% 줄이면서도 맵고 얼큰한 맛은 유지한다는 후기가 쏟아지고 있어요.',
+    reactions: [
+      { platform: 'N 네이버',  text: '이거 따라 해봤는데 진짜 맛있어요. 칼로리도 낮아서 자주 해먹을 것 같아요', likes: '8.7만' },
+      { platform: '📸 인스타',  text: '다이어트 하면서 마라탕 못 먹어서 슬펐는데 이거 구원이다 진짜', likes: '3.4만' },
+      { platform: '▶ 유튜브',  text: '레시피 영상 올렸는데 반응 미쳤음. 봄 다이어트 수요 엄청나네', likes: '1.9만' },
+    ],
+  },
+  {
+    id: 5, rank: 6, rankClass: 'rank-other', hot: false,
+    category: '게임', catColor: 'color:#2DCB8A; background:#f0fff8;',
+    titleHtml: "발로란트 신규 요원 '아스트라' 리워크",
+    titlePlain: "발로란트 신규 요원 '아스트라' 리워크",
+    heat: '🔥', heatLabel: '관심',
+    s1: { icon: '📌', text: '라이엇게임즈가 아스트라 스킬 대규모 개편 패치 공개', tip: false },
+    s2: { icon: '🚀', text: '커뮤니티에서 "너프냐 버프냐" 논쟁, 게임 유저 집중 반응', tip: false },
+    s3: { icon: '💬', text: '"발로란트 아스트라 완전 바뀌었대, 게임하는 친구한테 물어봐봐"', tip: true },
+    platforms: [
+      { cls: 'badge-youtube', label: '▶ 유튜브' },
+      { cls: 'badge-twitter', label: '𝕏 트위터' },
+    ],
+    whyCat: '게임',
+    context: "라이엇게임즈가 발로란트 공식 업데이트를 통해 컨트롤러 요원 '아스트라'의 스킬 세트를 전면 개편했어요. 새로운 궁극기와 전술적 활용 방식이 크게 달라지면서 커뮤니티에서 '너프냐 버프냐'를 두고 열띤 토론이 이어지고 있어요. 프로게이머들의 반응 영상도 유튜브에서 빠르게 조회수를 올리고 있어요.",
+    reactions: [
+      { platform: '▶ 유튜브',  text: '프로씬에서 아스트라 완전히 바뀔 것 같다. 팀 전략 다 갈아엎어야 할 듯', likes: '3.3만' },
+      { platform: '𝕏 트위터',  text: '새 아스트라 써봤는데 솔직히 이전이 더 나았던 것 같음... 적응 필요', likes: '2.1만' },
+      { platform: 'N 네이버',  text: '리워크 이후 아스트라 픽률 변화 분석. 초반엔 하락할 것으로 예상', likes: '1.2만' },
+    ],
+  },
+];
+
+/* ════════════════════════════════
+   WHY DATA
+════════════════════════════════ */
+const WHY_DATA = {
+  '밈/인터넷문화': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "밈/인터넷문화" 카테고리와 일치해요.' },
+    { icon: '📈', label: '급상승 트렌드',  desc: '지난 24시간 내 검색량 320% 급증했어요.' },
+    { icon: '👥', label: '또래 활동 많음', desc: '20대 이용자가 가장 많이 반응한 트렌드예요.' },
+  ],
+  '패션': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "패션" 카테고리와 일치해요.' },
+    { icon: '📈', label: '무신사 급상승',  desc: '무신사 급상승 키워드 1위에 올랐어요.' },
+    { icon: '🌸', label: '시즌 연관',      desc: '지금 봄 시즌 패션 트렌드예요.' },
+  ],
+  '팝업스토어': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "팝업스토어" 카테고리와 일치해요.' },
+    { icon: '📍', label: '위치 근처',      desc: '서울 성수동 — 자주 방문하는 지역이에요.' },
+    { icon: '📈', label: '인증샷 급상승',  desc: '인스타그램 인증샷 게시물 5천 건 이상이에요.' },
+  ],
+  '음악': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "음악" 카테고리와 일치해요.' },
+    { icon: '📈', label: '틱톡 바이럴',   desc: '틱톡 챌린지 참여 영상 2만 건 돌파했어요.' },
+    { icon: '🌏', label: '글로벌 확산',   desc: '해외에서도 동시에 뜨고 있는 트렌드예요.' },
+  ],
+  '맛집': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "맛집" 카테고리와 일치해요.' },
+    { icon: '📈', label: '네이버 급상승',  desc: '네이버 블로그 공유 5만 건 돌파했어요.' },
+    { icon: '🥗', label: '다이어트 시즌',  desc: '봄 다이어트 시즌과 맞물려 확산 중이에요.' },
+  ],
+  '게임': [
+    { icon: '🏷', label: '관심사 기반',    desc: '선택하신 "게임" 카테고리와 일치해요.' },
+    { icon: '📈', label: '커뮤니티 급상승', desc: '게임 커뮤니티 반응 수 1위예요.' },
+    { icon: '🎮', label: '정기 패치',      desc: '공식 패치 직후라 커뮤니티 반응이 높아요.' },
+  ],
+};
+
+/* ════════════════════════════════
+   RENDER HOME CARDS
+════════════════════════════════ */
+function renderCards() {
+  const list = document.getElementById('cardsList');
+  list.innerHTML = CARDS.map(c => `
+    <div class="trend-card" onclick="openDetail(${c.id})">
+      <div class="card-rank-bar ${c.rankClass}"></div>
+      <div class="card-inner">
+        <div class="card-top">
+          <div class="card-meta">
+            <span class="rank-num ${c.hot ? 'hot' : ''}">${c.rank}</span>
+            <div class="card-title-wrap">
+              <span class="card-category-tag" style="${c.catColor}">${c.category}</span>
+              <div class="card-title">${c.titleHtml}</div>
+            </div>
+          </div>
+          <div class="heat-score">
+            <span class="heat-fires">${c.heat}</span>
+            <span class="heat-label">${c.heatLabel}</span>
+          </div>
+        </div>
+        <div class="summary-lines">
+          <div class="summary-line">
+            <span class="line-icon">${c.s1.icon}</span>
+            <span class="line-text${c.s1.tip ? ' tip' : ''}">${c.s1.text}</span>
+          </div>
+          <div class="summary-line">
+            <span class="line-icon">${c.s2.icon}</span>
+            <span class="line-text${c.s2.tip ? ' tip' : ''}">${c.s2.text}</span>
+          </div>
+          <div class="summary-line">
+            <span class="line-icon">${c.s3.icon}</span>
+            <span class="line-text${c.s3.tip ? ' tip' : ''}">${c.s3.text}</span>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <div class="platform-badges">
+            ${c.platforms.map(p => `<span class="platform-badge ${p.cls}">${p.label}</span>`).join('')}
+          </div>
+          <button class="why-label" onclick="openWhy(event, '${c.whyCat}')">왜 보이나요?</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════════════════════════════════
+   RENDER DETAIL
+════════════════════════════════ */
+function openDetail(id) {
+  const c = CARDS[id];
+  const scroll = document.getElementById('detailScroll');
+
+  const rankColor = c.hot ? 'var(--fire)' : 'var(--primary)';
+
+  scroll.innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-rank-bar ${c.rankClass}"></div>
+      <div class="detail-cat-row">
+        <span class="card-category-tag" style="${c.catColor}; font-size:12px; padding:4px 12px;">${c.category}</span>
+        <div class="detail-heat">
+          <span class="fires">${c.heat}</span>
+          <span class="hlabel">${c.heatLabel}</span>
+        </div>
+      </div>
+      <div class="detail-title">${c.titleHtml}</div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">3줄 요약</div>
+      <div class="detail-summary">
+        <div class="detail-summary-line">
+          <span class="dsl-icon">${c.s1.icon}</span>
+          <div>
+            <div class="dsl-label">이게 뭔지</div>
+            <div class="dsl-text">${c.s1.text}</div>
+          </div>
+        </div>
+        <div class="detail-summary-line">
+          <span class="dsl-icon">${c.s2.icon}</span>
+          <div>
+            <div class="dsl-label">왜 지금 뜨는지</div>
+            <div class="dsl-text">${c.s2.text}</div>
+          </div>
+        </div>
+        <div class="detail-summary-line">
+          <span class="dsl-icon">${c.s3.icon}</span>
+          <div>
+            <div class="dsl-label">대화 활용 팁 💬</div>
+            <div class="dsl-text tip">${c.s3.text}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">자세한 내용</div>
+      <p class="detail-context-text">${c.context}</p>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">출처 플랫폼 · 원문 보기</div>
+      <div class="detail-platform-row">
+        ${c.platforms.map(p => `
+          <button class="detail-platform-btn ${p.cls}" onclick="alert('원문 링크 연결 예정')">
+            ${p.label} <span style="opacity:.6; font-size:11px;">→ 원문</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">베스트 반응 👀</div>
+      <div class="reactions-list">
+        ${c.reactions.map(r => `
+          <div class="reaction-item">
+            <div class="reaction-top">
+              <span class="reaction-platform">${r.platform}</span>
+              <span class="reaction-likes">❤️ ${r.likes}</span>
+            </div>
+            <div class="reaction-text">${r.text}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <button class="detail-cta" onclick="shareCard()">이 트렌드 공유하기 ↗</button>
+  `;
+
+  // Activate detail screen
+  document.getElementById('screen-detail').classList.add('active');
+
+  // Scroll detail to top
+  scroll.scrollTop = 0;
+
+  // Re-bind tooltips in detail
+  bindTooltips(scroll);
+}
+
+function closeDetail() {
+  document.getElementById('screen-detail').classList.remove('active');
+}
+
+function shareCard() {
+  if (navigator.share) {
+    navigator.share({ title: '트렌픽', text: '오늘의 트렌드를 확인해보세요!', url: window.location.href });
+  } else {
+    alert('공유 기능 — 모바일에서 사용해보세요!');
+  }
+}
+
+/* ════════════════════════════════
+   SCREEN TRANSITIONS
+════════════════════════════════ */
+function goHome() {
+  document.getElementById('screen-onboarding').classList.remove('active');
+}
+
+/* ════════════════════════════════
+   ONBOARDING LOGIC
+════════════════════════════════ */
+let selectedTags = new Set();
+
+document.querySelectorAll('.ob-tag').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    if (selectedTags.has(cat)) {
+      selectedTags.delete(cat);
+      btn.classList.remove('selected');
+    } else {
+      if (selectedTags.size >= 5) {
+        // Toast effect on count badge
+        const badge = document.getElementById('obCount');
+        badge.style.background = '#ffe0e0';
+        badge.style.color = '#e03';
+        badge.textContent = '최대 5개까지만 선택 가능해요';
+        setTimeout(() => {
+          badge.style.background = '';
+          badge.style.color = '';
+          updateObCount();
+        }, 1500);
+        return;
+      }
+      selectedTags.add(cat);
+      btn.classList.add('selected');
+    }
+    updateObCount();
+  });
+});
+
+function updateObCount() {
+  const n = selectedTags.size;
+  document.getElementById('obCount').textContent = `${n} / 5 선택`;
+  document.getElementById('obCta').disabled = n === 0;
+}
+
+/* ════════════════════════════════
+   HOME INTERACTIONS
+════════════════════════════════ */
+function selectCat(el) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function switchNav(el, tabId) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+function switchNavById(tabId, navIndex) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('nav-' + navIndex).classList.add('active');
+  document.querySelectorAll('.tab-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+}
+
+function markAllRead() {
+  document.querySelectorAll('.noti-item.unread').forEach(el => el.classList.remove('unread'));
+  document.querySelectorAll('.unread-dot').forEach(el => el.remove());
+  const dot = document.getElementById('notiDot');
+  if (dot) dot.remove();
+}
+
+function goOnboarding() {
+  document.getElementById('screen-onboarding').classList.add('active');
+}
+
+/* ════════════════════════════════
+   TOOLTIP
+════════════════════════════════ */
+const tooltipEl = document.getElementById('tooltipPopup');
+let tooltipTimer = null;
+
+function bindTooltips(root) {
+  root.querySelectorAll('.tooltip-word').forEach(word => {
+    word.addEventListener('click', e => {
+      e.stopPropagation();
+      const rect = word.getBoundingClientRect();
+      tooltipEl.innerHTML = `<span class="tt-word">${word.dataset.word}</span>${word.dataset.desc}`;
+      tooltipEl.style.display = 'block';
+      const tipW = tooltipEl.offsetWidth;
+      const vpW = Math.min(window.innerWidth, 430);
+      const bodyLeft = document.body.getBoundingClientRect().left;
+      let left = rect.left - bodyLeft;
+      if (left + tipW > vpW - 16) left = vpW - tipW - 16;
+      if (left < 16) left = 16;
+      const top = rect.top + window.scrollY - tooltipEl.offsetHeight - 10;
+      tooltipEl.style.left = (left + bodyLeft) + 'px';
+      tooltipEl.style.top  = top + 'px';
+      clearTimeout(tooltipTimer);
+      tooltipTimer = setTimeout(() => { tooltipEl.style.display = 'none'; }, 3000);
+    });
+  });
+}
+
+document.addEventListener('click', () => {
+  tooltipEl.style.display = 'none';
+  clearTimeout(tooltipTimer);
+});
+
+/* ════════════════════════════════
+   WHY MODAL
+════════════════════════════════ */
+function openWhy(e, cat) {
+  e.stopPropagation();
+  const data = WHY_DATA[cat] || WHY_DATA['밈/인터넷문화'];
+  document.getElementById('whyContent').innerHTML = data.map(d => `
+    <div class="why-item">
+      <div class="why-item-icon">${d.icon}</div>
+      <div class="why-item-text">
+        <div class="wi-label">${d.label}</div>
+        <div class="wi-desc">${d.desc}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('whyModalBg').style.display = 'block';
+}
+
+function closeWhy() {
+  document.getElementById('whyModalBg').style.display = 'none';
+}
+
+/* ════════════════════════════════
+   INIT — SPLASH → ONBOARDING
+════════════════════════════════ */
+renderCards();
+bindTooltips(document.getElementById('cardsList'));
+
+setTimeout(() => {
+  document.getElementById('screen-splash').classList.add('exit');
+  setTimeout(() => {
+    document.getElementById('screen-splash').style.display = 'none';
+    document.getElementById('screen-onboarding').classList.add('active');
+  }, 500);
+}, 2000);
+</script>
+</body>
+</html>
