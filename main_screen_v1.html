@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>트렌픽 — Trenpick</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, sans-serif;
+      background: #DDD5FF;
+      min-height: 100vh;
+      display: flex; justify-content: center; align-items: flex-start;
+    }
+
+    .phone {
+      width: 100%; max-width: 390px;
+      background: #F5F3FF;
+      display: flex; flex-direction: column;
+      min-height: 100vh;
+      overflow: hidden; position: relative;
+    }
+
+    @media (min-width: 440px) {
+      body { padding: 32px 0; align-items: center; }
+      .phone {
+        height: 844px; min-height: 844px;
+        border-radius: 44px;
+        box-shadow: 0 60px 120px rgba(91,33,182,0.3), 0 0 0 1px rgba(0,0,0,0.12);
+      }
+    }
+    @media (max-width: 439px) { body { background: #F5F3FF; } }
+
+    /* ── Screens ── */
+    .screen { display: none; flex-direction: column; flex: 1; min-height: 0; height: 100%; }
+    .screen.active { display: flex; }
+
+    /* ── Status Bar ── */
+    .sbar {
+      background: linear-gradient(160deg,#4C1D95,#6D28D9);
+      padding: 14px 24px 6px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .sbar-r { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+
+    /* ── Sub Header ── */
+    .sub-hdr {
+      background: #fff; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid #EDE9FE; flex-shrink: 0;
+    }
+    .back-btn {
+      width: 34px; height: 34px; background: #F3EFFF;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; border: none; color: #6D28D9; font-weight: 700;
+    }
+    .back-btn:active { background: #EDE9FE; }
+    .sub-hdr-title { font-size: 16px; font-weight: 800; color: #1A1A2E; flex: 1; }
+    .sub-hdr-action {
+      width: 34px; height: 34px; background: #F3EFFF;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; border: none;
+    }
+
+    /* ── App Header ── */
+    .app-hdr {
+      background: linear-gradient(160deg,#4C1D95,#6D28D9);
+      padding: 4px 20px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .logo-area { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 38px; height: 38px; background: rgba(255,255,255,.18);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; border: 1.5px solid rgba(255,255,255,.25);
+    }
+    .logo-text { color: #fff; }
+    .logo-text .lmain { font-size: 17px; font-weight: 800; letter-spacing: -.5px; }
+    .logo-text .lsub { font-size: 10px; opacity: .7; margin-top: 1px; }
+    .hdr-actions { display: flex; gap: 10px; }
+    .icon-btn {
+      width: 36px; height: 36px; background: rgba(255,255,255,.14);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer; color: #fff; font-size: 17px;
+      position: relative; transition: background .15s;
+    }
+    .icon-btn:active { background: rgba(255,255,255,.28); }
+    .notif-dot {
+      position: absolute; top: 4px; right: 4px;
+      width: 8px; height: 8px; background: #F87171; border-radius: 50%;
+      border: 2px solid #6D28D9;
+    }
+
+    /* ── Daily Brief ── */
+    .daily-brief {
+      background: linear-gradient(160deg,#4C1D95,#6D28D9);
+      padding: 0 16px 20px; flex-shrink: 0;
+    }
+    .brief-card {
+      background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22);
+      border-radius: 18px; padding: 14px 16px;
+    }
+    .brief-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brief-title { color: #fff; font-size: 13px; font-weight: 700; }
+    .live-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; color: rgba(255,255,255,.75);
+      background: rgba(255,255,255,.12); padding: 3px 9px; border-radius: 20px;
+    }
+    .live-dot {
+      width: 6px; height: 6px; background: #4ADE80; border-radius: 50%;
+      animation: blink 1.6s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.35} }
+    .brief-kws { display: flex; gap: 7px; flex-wrap: wrap; }
+    .brief-kw {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.16); border-radius: 20px; padding: 4px 11px;
+      color: #fff; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .brief-kw:active { background: rgba(255,255,255,.28); }
+    .kw-rank { font-size: 10px; font-weight: 800; color: rgba(255,255,255,.6); }
+
+    /* ── Category Tabs ── */
+    .cat-wrap {
+      background: #fff; border-bottom: 1px solid #EDE9FE;
+      box-shadow: 0 3px 12px rgba(109,40,217,.07); flex-shrink: 0;
+    }
+    .cat-scroll {
+      display: flex; overflow-x: auto; padding: 11px 14px; gap: 7px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .cat-scroll::-webkit-scrollbar { display: none; }
+    .cat-chip {
+      white-space: nowrap; padding: 6px 15px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+      background: #F3EFFF; color: #6D28D9; transition: all .18s; flex-shrink: 0;
+    }
+    .cat-chip.active { background: #6D28D9; color: #fff; }
+    .cat-chip:active { transform: scale(.94); }
+
+    /* ── Scroll Area ── */
+    .scroll-area {
+      flex: 1; overflow-y: auto; padding: 14px 14px 96px;
+      display: flex; flex-direction: column; gap: 11px;
+    }
+
+    /* ── Section Row ── */
+    .sec-row { display: flex; justify-content: space-between; align-items: center; }
+    .sec-title { font-size: 16px; font-weight: 800; color: #1A1A2E; }
+    .sec-count { font-size: 12px; color: #A59DC0; }
+
+    /* ── Trend Card ── */
+    .trend-card {
+      background: #fff; border-radius: 20px; padding: 16px;
+      box-shadow: 0 2px 14px rgba(109,40,217,.07); border: 1px solid rgba(109,40,217,.06);
+      cursor: pointer; transition: transform .13s, box-shadow .13s;
+    }
+    .trend-card:active { transform: scale(.975); box-shadow: 0 1px 6px rgba(109,40,217,.1); }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
+    .card-left { display: flex; gap: 10px; align-items: flex-start; flex: 1; min-width: 0; }
+    .rank-badge {
+      width: 28px; height: 28px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900; flex-shrink: 0; margin-top: 2px;
+    }
+    .r1{background:#FEF3C7;color:#D97706} .r2{background:#EDE9FE;color:#6D28D9}
+    .r3{background:#FFE4E6;color:#BE123C} .rn{background:#F4F4F8;color:#999}
+    .card-name-wrap { flex: 1; min-width: 0; }
+    .trend-name {
+      font-size: 16px; font-weight: 800; color: #1A1A2E;
+      line-height: 1.35; margin-bottom: 5px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pbadges { display: flex; gap: 5px; flex-wrap: wrap; }
+    .pb {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    }
+    .pb-i{background:#FCE7F3;color:#BE185D} .pb-y{background:#FEE2E2;color:#DC2626}
+    .pb-t{background:#DBEAFE;color:#1D4ED8} .pb-n{background:#DCFCE7;color:#15803D}
+    .cat-tag {
+      font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 8px;
+      background: #F3EFFF; color: #6D28D9; flex-shrink: 0;
+    }
+    .card-div { height: 1px; background: #F3EFFF; margin: 0 0 12px; }
+    .summary { display: flex; flex-direction: column; gap: 7px; }
+    .s-line { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #3D3554; line-height: 1.55; }
+    .s-ic { font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+    .s-tx { flex: 1; }
+    .s-line.tip { background: #F3EFFF; padding: 8px 11px; border-radius: 11px; margin-top: 1px; }
+    .s-line.tip .s-tx { color: #5B21B6; font-weight: 700; }
+    .tw {
+      color: #7C3AED; font-weight: 700;
+      text-decoration: underline; text-decoration-style: dotted;
+      text-decoration-color: #A78BFA; cursor: pointer;
+    }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+    .why-tag { font-size: 11px; color: #B0A8C8; background: #FAFAFA; padding: 3px 9px; border-radius: 8px; }
+    .why-tag b { color: #7C3AED; font-weight: 700; }
+    .more-btn { font-size: 12px; font-weight: 700; color: #7C3AED; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      background: #fff; border-top: 1px solid #EDE9FE;
+      padding: 8px 0 22px; display: flex; justify-content: space-around;
+      flex-shrink: 0; box-shadow: 0 -6px 24px rgba(109,40,217,.09);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 3px; cursor: pointer; font-size: 10px; font-weight: 700;
+      color: #C4BAD8; padding: 6px 0; position: relative;
+    }
+    .nav-item.active { color: #6D28D9; }
+    .nav-ic { font-size: 22px; }
+    .nav-dot {
+      position: absolute; top: 4px; left: 50%; margin-left: 4px;
+      width: 7px; height: 7px; background: #EF4444; border-radius: 50%; border: 2px solid #fff;
+    }
+
+    /* ════════════════════════
+       ONBOARDING
+    ════════════════════════ */
+    .onb-body {
+      background: linear-gradient(160deg,#3B0764 0%,#6D28D9 60%,#8B5CF6 100%);
+      flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 40px;
+    }
+    .onb-top { padding: 48px 28px 28px; text-align: center; }
+    .onb-logo {
+      width: 68px; height: 68px; background: rgba(255,255,255,.18); border-radius: 22px;
+      display: flex; align-items: center; justify-content: center; font-size: 38px;
+      margin: 0 auto 18px; border: 2px solid rgba(255,255,255,.3);
+    }
+    .onb-h1 { font-size: 22px; font-weight: 900; color: #fff; line-height: 1.45; }
+    .onb-sub { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 8px; }
+    .onb-counter {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.15); padding: 5px 14px; border-radius: 20px;
+      margin-top: 14px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.85);
+    }
+    .onb-counter em { color: #C4B5FD; font-style: normal; font-weight: 900; font-size: 15px; }
+    .onb-tags-wrap { padding: 0 20px; flex: 1; }
+    .onb-tags { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .onb-tag {
+      padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: 2px solid rgba(255,255,255,.3);
+      background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+      transition: all .18s; user-select: none;
+    }
+    .onb-tag.sel { background: #fff; color: #6D28D9; border-color: #fff; transform: scale(1.04); }
+    .onb-tag:active { transform: scale(.95); }
+    .onb-bottom { padding: 28px 20px 0; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    .onb-cta {
+      width: 100%; background: #fff; color: #6D28D9; border: none; border-radius: 16px;
+      padding: 16px; font-size: 16px; font-weight: 900; cursor: pointer;
+      opacity: .35; pointer-events: none; transition: all .18s;
+    }
+    .onb-cta.on { opacity: 1; pointer-events: auto; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    .onb-cta.on:active { transform: scale(.97); }
+    .onb-skip { font-size: 13px; color: rgba(255,255,255,.5); cursor: pointer; text-decoration: underline; }
+
+    /* ════════════════════════
+       DETAIL
+    ════════════════════════ */
+    .detail-hdr {
+      background: linear-gradient(160deg,#4C1D95,#6D28D9);
+      padding: 12px 16px 22px; flex-shrink: 0;
+    }
+    .detail-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .detail-back {
+      width: 34px; height: 34px; background: rgba(255,255,255,.18);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; cursor: pointer; border: none; color: #fff; font-weight: 700;
+    }
+    .detail-back:active { background: rgba(255,255,255,.3); }
+    .detail-nav-title { flex: 1; font-size: 15px; font-weight: 700; color: rgba(255,255,255,.9); }
+    .detail-actions { display: flex; gap: 8px; }
+    .detail-act-btn {
+      width: 34px; height: 34px; background: rgba(255,255,255,.18);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; border: none;
+    }
+    .detail-act-btn:active { background: rgba(255,255,255,.3); }
+    .detail-rank-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .detail-rank-badge {
+      padding: 3px 12px; border-radius: 10px;
+      font-size: 12px; font-weight: 900; background: rgba(255,255,255,.2); color: #fff;
+    }
+    .detail-cat-badge {
+      font-size: 11px; font-weight: 700; background: rgba(255,255,255,.15);
+      padding: 3px 10px; border-radius: 8px; color: rgba(255,255,255,.85);
+    }
+    .detail-name { font-size: 22px; font-weight: 900; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+    .detail-pbs { display: flex; gap: 7px; flex-wrap: wrap; }
+    .detail-pb {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff;
+      cursor: pointer;
+    }
+    .detail-pb:active { background: rgba(255,255,255,.28); }
+
+    .detail-scroll { flex: 1; overflow-y: auto; padding: 14px 14px 32px; display: flex; flex-direction: column; gap: 12px; }
+    .detail-card {
+      background: #fff; border-radius: 18px; padding: 16px;
+      box-shadow: 0 2px 12px rgba(109,40,217,.07);
+    }
+    .detail-card-title {
+      font-size: 11px; font-weight: 800; color: #7C3AED;
+      letter-spacing: .8px; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .d-sum { display: flex; flex-direction: column; gap: 10px; }
+    .d-line { display: flex; gap: 10px; align-items: flex-start; }
+    .d-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: #fff; flex-shrink: 0; margin-top: 2px;
+    }
+    .dn1{background:#7C3AED} .dn2{background:#A78BFA}
+    .d-text { flex: 1; font-size: 14px; color: #2D2254; line-height: 1.6; }
+    .d-line.tip { background: #F3EFFF; border-radius: 12px; padding: 10px 12px; }
+    .d-line.tip .d-text { font-weight: 700; color: #5B21B6; }
+    .d-tip-ic { font-size: 16px; flex-shrink: 0; }
+
+    .plink-list { display: flex; flex-direction: column; gap: 10px; }
+    .plink-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 14px; border: 1.5px solid #EDE9FE;
+    }
+    .pli-icon { font-size: 22px; flex-shrink: 0; }
+    .pli-info { flex: 1; }
+    .pli-name { font-size: 13px; font-weight: 700; color: #1A1A2E; }
+    .pli-meta { font-size: 11px; color: #A59DC0; margin-top: 2px; }
+    .pli-btn {
+      font-size: 12px; font-weight: 800; color: #6D28D9;
+      background: #F3EFFF; padding: 6px 12px; border-radius: 10px; cursor: pointer; border: none;
+    }
+    .pli-btn:active { background: #EDE9FE; }
+
+    .react-list { display: flex; flex-direction: column; gap: 10px; }
+    .react-item { background: #FAFAFA; border-radius: 12px; padding: 12px 14px; border: 1px solid #F3EFFF; }
+    .ri-plat { font-size: 10px; font-weight: 700; color: #A59DC0; margin-bottom: 5px; }
+    .ri-text { font-size: 13px; color: #2D2254; line-height: 1.55; }
+    .ri-foot { display: flex; align-items: center; gap: 5px; margin-top: 7px; }
+    .ri-likes { font-size: 11px; font-weight: 700; color: #7C3AED; }
+
+    /* ════════════════════════
+       EXPLORE
+    ════════════════════════ */
+    .explore-scroll {
+      flex: 1; overflow-y: auto; padding: 14px 14px 96px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .search-wrap { position: relative; }
+    .search-input {
+      width: 100%; padding: 13px 16px 13px 44px; border-radius: 16px;
+      border: 1.5px solid #EDE9FE; background: #fff;
+      font-size: 14px; color: #1A1A2E; font-family: inherit; outline: none;
+    }
+    .search-input:focus { border-color: #7C3AED; }
+    .search-input::placeholder { color: #C4BAD8; }
+    .search-ic { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; }
+    .hot-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .hot-chip {
+      padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      background: #F3EFFF; color: #6D28D9; cursor: pointer; border: none;
+    }
+    .hot-chip:active { background: #EDE9FE; }
+    .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cgc {
+      background: #fff; border-radius: 16px; padding: 16px;
+      display: flex; flex-direction: column; gap: 6px;
+      cursor: pointer; border: 1.5px solid #EDE9FE; transition: all .15s;
+    }
+    .cgc:active { background: #F3EFFF; border-color: #7C3AED; }
+    .cgc-icon { font-size: 28px; }
+    .cgc-name { font-size: 14px; font-weight: 800; color: #1A1A2E; }
+    .cgc-count { font-size: 11px; color: #A59DC0; }
+    .mini-card {
+      background: #fff; border-radius: 16px; padding: 14px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 2px 10px rgba(109,40,217,.06); cursor: pointer;
+      border: 1px solid rgba(109,40,217,.05);
+    }
+    .mini-card:active { transform: scale(.98); }
+    .mini-rank {
+      width: 24px; height: 24px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; flex-shrink: 0;
+      background: #F4F4F8; color: #999;
+    }
+    .mini-info { flex: 1; min-width: 0; }
+    .mini-name { font-size: 14px; font-weight: 700; color: #1A1A2E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mini-meta { font-size: 11px; color: #A59DC0; margin-top: 2px; }
+    .mini-cat { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 7px; background: #F3EFFF; color: #6D28D9; flex-shrink: 0; }
+
+    /* ════════════════════════
+       NOTIFICATION SETTINGS
+    ════════════════════════ */
+    .notif-scroll {
+      flex: 1; overflow-y: auto; padding: 14px 14px 96px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .set-card { background: #fff; border-radius: 18px; padding: 18px; box-shadow: 0 2px 12px rgba(109,40,217,.06); }
+    .set-card-title { font-size: 14px; font-weight: 800; color: #1A1A2E; margin-bottom: 4px; }
+    .set-card-desc { font-size: 12px; color: #A59DC0; margin-bottom: 14px; }
+    .kw-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .kw-input {
+      flex: 1; padding: 10px 14px; border-radius: 12px; border: 1.5px solid #EDE9FE;
+      font-size: 13px; font-family: inherit; color: #1A1A2E; outline: none; background: #FAFAFA;
+    }
+    .kw-input:focus { border-color: #7C3AED; background: #fff; }
+    .kw-input::placeholder { color: #C4BAD8; }
+    .kw-add-btn {
+      padding: 10px 16px; border-radius: 12px; background: #6D28D9; color: #fff;
+      border: none; font-size: 13px; font-weight: 800; cursor: pointer;
+    }
+    .kw-add-btn:active { background: #5B21B6; }
+    .kw-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .kw-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 20px; background: #F3EFFF; color: #6D28D9;
+      font-size: 13px; font-weight: 700;
+    }
+    .kw-rm {
+      width: 16px; height: 16px; border-radius: 50%; background: #D8D0F7;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; cursor: pointer; border: none; color: #6D28D9; font-weight: 900;
+    }
+    .time-opts { display: flex; flex-direction: column; gap: 8px; }
+    .time-opt {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-radius: 13px; border: 1.5px solid #EDE9FE;
+      cursor: pointer; transition: all .15s;
+    }
+    .time-opt.sel { border-color: #7C3AED; background: #F3EFFF; }
+    .to-left { display: flex; align-items: center; gap: 10px; }
+    .to-ic { font-size: 18px; }
+    .to-lbl { font-size: 14px; font-weight: 700; color: #1A1A2E; }
+    .to-sub { font-size: 11px; color: #A59DC0; margin-top: 1px; }
+    .to-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #D8D0F7; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .time-opt.sel .to-radio { border-color: #7C3AED; background: #7C3AED; }
+    .time-opt.sel .to-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; display: block; }
+    .toggle-rows { display: flex; flex-direction: column; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid #F3EFFF; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-lbl { font-size: 14px; font-weight: 700; color: #1A1A2E; }
+    .toggle-desc { font-size: 11px; color: #A59DC0; margin-top: 2px; }
+    .toggle-sw {
+      width: 46px; height: 26px; border-radius: 13px; background: #E2E0EA;
+      cursor: pointer; position: relative; flex-shrink: 0; border: none; transition: background .2s;
+    }
+    .toggle-sw.on { background: #7C3AED; }
+    .toggle-sw::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 20px; height: 20px; border-radius: 50%; background: #fff;
+      transition: transform .2s; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .toggle-sw.on::after { transform: translateX(20px); }
+    .save-btn {
+      width: 100%; padding: 16px; border: none; border-radius: 16px; cursor: pointer;
+      background: linear-gradient(135deg,#6D28D9,#7C3AED); color: #fff;
+      font-size: 16px; font-weight: 900; box-shadow: 0 6px 20px rgba(109,40,217,.3);
+    }
+    .save-btn:active { transform: scale(.97); }
+
+    /* ── Tooltip ── */
+    .tt-popup {
+      position: fixed; background: #1E1B4B; color: #fff;
+      padding: 10px 14px 11px; border-radius: 13px; font-size: 13px; max-width: 250px;
+      z-index: 9999; box-shadow: 0 12px 32px rgba(0,0,0,.25); pointer-events: none;
+      opacity: 0; transform: translateY(6px) scale(.97); transition: opacity .18s, transform .18s;
+    }
+    .tt-popup.show { opacity: 1; transform: translateY(0) scale(1); }
+    .tt-popup::after {
+      content: ''; position: absolute; bottom: -7px; left: 18px;
+      border: 7px solid transparent; border-bottom: none; border-top-color: #1E1B4B;
+    }
+    .tt-key { font-weight: 900; color: #A78BFA; margin-bottom: 3px; font-size: 13px; }
+    .tt-desc { color: rgba(255,255,255,.85); line-height: 1.5; font-size: 12px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+      background: #1E1B4B; color: #fff; padding: 10px 20px; border-radius: 24px;
+      font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none;
+      transition: opacity .2s; white-space: nowrap; z-index: 9998;
+    }
+    .toast.show { opacity: 1; }
+
+    /* ── Empty ── */
+    .empty { text-align: center; padding: 48px 24px; color: #B0A8C8; font-size: 14px; display: none; }
+    .empty-ic { font-size: 40px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ▓▓▓▓▓▓▓▓▓▓ SCREEN: ONBOARDING ▓▓▓▓▓▓▓▓▓▓ -->
+<div id="s-onb" class="screen active">
+  <div class="sbar"><span>9:41</span><div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+  <div class="onb-body">
+    <div class="onb-top">
+      <div class="onb-logo">🔍</div>
+      <div class="onb-h1">어떤 트렌드에<br>관심 있어요?</div>
+      <div class="onb-sub">나에게 맞는 트렌드만 골라드릴게요</div>
+      <div class="onb-counter">선택 <em id="onbCnt">0</em> / 5개</div>
+    </div>
+    <div class="onb-tags-wrap">
+      <div class="onb-tags" id="onbTags">
+        <div class="onb-tag" data-tag="fashion">👗 패션</div>
+        <div class="onb-tag" data-tag="food">🍽 맛집</div>
+        <div class="onb-tag" data-tag="popup">🏪 팝업스토어</div>
+        <div class="onb-tag" data-tag="music">🎵 음악</div>
+        <div class="onb-tag" data-tag="meme">😂 밈/인터넷문화</div>
+        <div class="onb-tag" data-tag="beauty">💄 뷰티</div>
+        <div class="onb-tag" data-tag="sports">⚽ 스포츠</div>
+        <div class="onb-tag" data-tag="game">🎮 게임</div>
+        <div class="onb-tag" data-tag="kidult">🎁 키덜트</div>
+        <div class="onb-tag" data-tag="drama">🎬 드라마/영화</div>
+      </div>
+    </div>
+    <div class="onb-bottom">
+      <button class="onb-cta" id="onbCta" onclick="go('s-home')">시작하기 →</button>
+      <div class="onb-skip" onclick="go('s-home')">나중에 설정할게요</div>
+    </div>
+  </div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓ SCREEN: HOME ▓▓▓▓▓▓▓▓▓▓ -->
+<div id="s-home" class="screen">
+  <div class="sbar"><span>9:41</span><div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+  <div class="app-hdr">
+    <div class="logo-area">
+      <div class="logo-icon">🔍</div>
+      <div class="logo-text"><div class="lmain">트렌픽</div><div class="lsub">오늘 트렌드, 한 번에</div></div>
+    </div>
+    <div class="hdr-actions">
+      <button class="icon-btn" onclick="go('s-notif')">🔔<div class="notif-dot"></div></button>
+      <button class="icon-btn" onclick="toast('관심사 설정은 준비 중이에요 🙏')">⚙️</button>
+    </div>
+  </div>
+  <div class="daily-brief">
+    <div class="brief-card">
+      <div class="brief-top">
+        <div class="brief-title">🔥 오늘의 인기 키워드 TOP 5</div>
+        <div class="live-badge"><div class="live-dot"></div>방금 업데이트</div>
+      </div>
+      <div class="brief-kws">
+        <div class="brief-kw"><span class="kw-rank">1위</span>먹태깡 챌린지</div>
+        <div class="brief-kw"><span class="kw-rank">2위</span>성수 팝업 대란</div>
+        <div class="brief-kw"><span class="kw-rank">3위</span>AI 버튜버 하루</div>
+        <div class="brief-kw"><span class="kw-rank">4위</span>Y2K 헤어</div>
+        <div class="brief-kw"><span class="kw-rank">5위</span>짜파구리 2.0</div>
+      </div>
+    </div>
+  </div>
+  <div class="cat-wrap">
+    <div class="cat-scroll" id="homeCats">
+      <button class="cat-chip active" data-cat="all">전체</button>
+      <button class="cat-chip" data-cat="fashion">👗 패션</button>
+      <button class="cat-chip" data-cat="food">🍽 맛집</button>
+      <button class="cat-chip" data-cat="popup">🏪 팝업</button>
+      <button class="cat-chip" data-cat="music">🎵 음악</button>
+      <button class="cat-chip" data-cat="meme">😂 밈</button>
+      <button class="cat-chip" data-cat="beauty">💄 뷰티</button>
+      <button class="cat-chip" data-cat="sports">⚽ 스포츠</button>
+      <button class="cat-chip" data-cat="game">🎮 게임</button>
+    </div>
+  </div>
+  <div class="scroll-area" id="homeArea">
+    <div class="sec-row"><div class="sec-title">실시간 트렌드</div><div class="sec-count">총 24개</div></div>
+    <div class="trend-card" data-cats="meme food" onclick="detail(1)">
+      <div class="card-top">
+        <div class="card-left"><div class="rank-badge r1">1</div><div class="card-name-wrap"><div class="trend-name">먹태깡 챌린지</div><div class="pbadges"><span class="pb pb-i">📷 인스타 🔥🔥🔥</span><span class="pb pb-y">▶ 유튜브 🔥🔥</span></div></div></div>
+        <span class="cat-tag">밈</span>
+      </div>
+      <div class="card-div"></div>
+      <div class="summary">
+        <div class="s-line"><span class="s-ic">🔵</span><span class="s-tx">농심 신과자 <span class="tw" data-key="먹태깡" data-desc="농심이 출시한 먹태맛 과자. 먹태(마른 명태) + 깡(과자)의 합성어">먹태깡</span>을 먹고 리액션 영상을 찍는 SNS 챌린지</span></div>
+        <div class="s-line"><span class="s-ic">🟡</span><span class="s-tx">유명 아이돌·유튜버 참여로 인스타 릴스 1억 뷰 돌파하며 급확산</span></div>
+        <div class="s-line tip"><span class="s-ic">💬</span><span class="s-tx">"먹태깡 챌린지 봤어? 나도 해보고 싶더라"</span></div>
+      </div>
+      <div class="card-footer"><div class="why-tag">👁 <b>#밈/인터넷문화</b> 관심사 기반</div><div class="more-btn">자세히 →</div></div>
+    </div>
+    <div class="trend-card" data-cats="popup food" onclick="detail(2)">
+      <div class="card-top">
+        <div class="card-left"><div class="rank-badge r2">2</div><div class="card-name-wrap"><div class="trend-name">성수동 버블티 팝업 대란</div><div class="pbadges"><span class="pb pb-i">📷 인스타 🔥🔥🔥</span><span class="pb pb-t">𝕏 트위터 🔥</span></div></div></div>
+        <span class="cat-tag">팝업</span>
+      </div>
+      <div class="card-div"></div>
+      <div class="summary">
+        <div class="s-line"><span class="s-ic">🔵</span><span class="s-tx">대만 유명 버블티 브랜드 국내 첫 <span class="tw" data-key="팝업스토어" data-desc="짧은 기간만 운영하는 임시 매장. 인증샷 문화와 맞물려 MZ세대 핫플로 자리잡음">팝업스토어</span>가 성수동에 오픈</span></div>
+        <div class="s-line"><span class="s-ic">🟡</span><span class="s-tx">오픈 당일 3시간 대기줄, 인증샷 5만 건 이상 게시되며 성수 핫플 등극</span></div>
+        <div class="s-line tip"><span class="s-ic">💬</span><span class="s-tx">"성수 버블티 팝업 가봤어? 줄이 너무 길어서 포기했어"</span></div>
+      </div>
+      <div class="card-footer"><div class="why-tag">👁 <b>#팝업스토어</b> 관심사 기반</div><div class="more-btn">자세히 →</div></div>
+    </div>
+    <div class="trend-card" data-cats="music" onclick="detail(3)">
+      <div class="card-top">
+        <div class="card-left"><div class="rank-badge r3">3</div><div class="card-name-wrap"><div class="trend-name">AI 버튜버 '하루' 데뷔</div><div class="pbadges"><span class="pb pb-y">▶ 유튜브 🔥🔥🔥</span><span class="pb pb-t">𝕏 트위터 🔥🔥</span></div></div></div>
+        <span class="cat-tag">음악</span>
+      </div>
+      <div class="card-div"></div>
+      <div class="summary">
+        <div class="s-line"><span class="s-ic">🔵</span><span class="s-tx">국내 최초 완전 AI 생성 <span class="tw" data-key="버튜버" data-desc="버추얼 유튜버(VTuber). 실제 얼굴 대신 아바타 캐릭터로 활동하는 크리에이터. 일본에서 시작된 문화">버튜버</span> '하루'가 유튜브 채널 개설 후 데뷔</span></div>
+        <div class="s-line"><span class="s-ic">🟡</span><span class="s-tx">데뷔 24시간 만에 구독자 50만 돌파, "AI인지 사람인지" 진위 논란 확산</span></div>
+        <div class="s-line tip"><span class="s-ic">💬</span><span class="s-tx">"AI 버튜버 '하루' 알아? 목소리가 진짜 같아서 소름이야"</span></div>
+      </div>
+      <div class="card-footer"><div class="why-tag">👁 <b>#음악/엔터</b> 관심사 기반</div><div class="more-btn">자세히 →</div></div>
+    </div>
+    <div class="trend-card" data-cats="fashion beauty" onclick="detail(4)">
+      <div class="card-top">
+        <div class="card-left"><div class="rank-badge rn">4</div><div class="card-name-wrap"><div class="trend-name">Y2K 나비핀 헤어 부활</div><div class="pbadges"><span class="pb pb-i">📷 인스타 🔥🔥</span><span class="pb pb-y">▶ 유튜브 🔥🔥</span></div></div></div>
+        <span class="cat-tag">패션</span>
+      </div>
+      <div class="card-div"></div>
+      <div class="summary">
+        <div class="s-line"><span class="s-ic">🔵</span><span class="s-tx">2000년대 감성 <span class="tw" data-key="Y2K" data-desc="Year 2000의 약자. 2000년대 초반 레트로 패션·문화 트렌드를 뜻하는 말. 나비핀·볼록 포니 등이 대표 아이템">Y2K</span> 나비핀·볼록 포니테일 헤어스타일 재유행</span></div>
+        <div class="s-line"><span class="s-ic">🟡</span><span class="s-tx">인기 아이돌 컴백 무대 이후 헤어샵 예약 폭주, 나비핀 품절 대란까지</span></div>
+        <div class="s-line tip"><span class="s-ic">💬</span><span class="s-tx">"Y2K 헤어 요즘 진짜 많이 하더라, 나도 한번 해볼까?"</span></div>
+      </div>
+      <div class="card-footer"><div class="why-tag">👁 <b>#패션</b> 관심사 기반</div><div class="more-btn">자세히 →</div></div>
+    </div>
+    <div class="trend-card" data-cats="food" onclick="detail(5)">
+      <div class="card-top">
+        <div class="card-left"><div class="rank-badge rn">5</div><div class="card-name-wrap"><div class="trend-name">짜파구리 2.0 레시피</div><div class="pbadges"><span class="pb pb-y">▶ 유튜브 🔥🔥</span><span class="pb pb-i">📷 인스타 🔥</span></div></div></div>
+        <span class="cat-tag">맛집</span>
+      </div>
+      <div class="card-div"></div>
+      <div class="summary">
+        <div class="s-line"><span class="s-ic">🔵</span><span class="s-tx"><span class="tw" data-key="짜파구리" data-desc="짜파게티+너구리를 함께 끓인 라면. 영화 '기생충'으로 전 세계에 알려진 레시피">짜파구리</span>에 특제 재료를 추가하는 업그레이드 레시피 숏츠 확산</span></div>
+        <div class="s-line"><span class="s-ic">🟡</span><span class="s-tx">유명 먹방 유튜버 영상 500만 뷰 돌파, "더 맛있는 짜파구리" 레시피 논쟁 중</span></div>
+        <div class="s-line tip"><span class="s-ic">💬</span><span class="s-tx">"짜파구리 2.0 알아? 거기다 치즈 올리면 진짜 맛있대"</span></div>
+      </div>
+      <div class="card-footer"><div class="why-tag">👁 <b>#맛집</b> 관심사 기반</div><div class="more-btn">자세히 →</div></div>
+    </div>
+    <div class="empty" id="homeEmpty"><div class="empty-ic">🔍</div><div>해당 카테고리 트렌드 없음</div></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="nav(this,'s-home')"><span class="nav-ic">🏠</span><span>홈</span></div>
+    <div class="nav-item" onclick="nav(this,'s-explore')"><span class="nav-ic">🔍</span><span>탐색</span></div>
+    <div class="nav-item" onclick="nav(this,'s-notif')"><span class="nav-ic">🔔</span><div class="nav-dot"></div><span>알림</span></div>
+    <div class="nav-item" onclick="toast('저장 기능은 준비 중이에요 🙏')"><span class="nav-ic">🔖</span><span>저장</span></div>
+    <div class="nav-item" onclick="toast('내 설정은 준비 중이에요 🙏')"><span class="nav-ic">👤</span><span>내 설정</span></div>
+  </div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓ SCREEN: DETAIL ▓▓▓▓▓▓▓▓▓▓ -->
+<div id="s-detail" class="screen">
+  <div class="sbar"><span>9:41</span><div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+  <div class="detail-hdr">
+    <div class="detail-nav">
+      <button class="detail-back" onclick="go('s-home')">←</button>
+      <div class="detail-nav-title">트렌드 상세</div>
+      <div class="detail-actions">
+        <button class="detail-act-btn" onclick="toast('저장됐어요! 🔖')">🔖</button>
+        <button class="detail-act-btn" onclick="toast('링크가 복사됐어요 🔗')">🔗</button>
+      </div>
+    </div>
+    <div class="detail-rank-row">
+      <div class="detail-rank-badge" id="d-rank"></div>
+      <div class="detail-cat-badge" id="d-cat"></div>
+    </div>
+    <div class="detail-name" id="d-name"></div>
+    <div class="detail-pbs" id="d-pbs"></div>
+  </div>
+  <div class="detail-scroll">
+    <div class="detail-card">
+      <div class="detail-card-title">🗂 3줄 요약</div>
+      <div class="d-sum" id="d-sum"></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-card-title">📡 플랫폼별 원문</div>
+      <div class="plink-list" id="d-plinks"></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-card-title">💬 베스트 반응</div>
+      <div class="react-list" id="d-reacts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓ SCREEN: EXPLORE ▓▓▓▓▓▓▓▓▓▓ -->
+<div id="s-explore" class="screen">
+  <div class="sbar"><span>9:41</span><div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="go('s-home')">←</button>
+    <div class="sub-hdr-title">탐색</div>
+  </div>
+  <div class="explore-scroll">
+    <div class="search-wrap">
+      <div class="search-ic">🔍</div>
+      <input class="search-input" placeholder="트렌드, 밈, 신조어 검색...">
+    </div>
+    <div>
+      <div class="sec-row" style="margin-bottom:10px"><div class="sec-title" style="font-size:14px">🔥 인기 검색어</div></div>
+      <div class="hot-chips">
+        <button class="hot-chip" onclick="toast('먹태깡 챌린지 검색 중...')">먹태깡 챌린지</button>
+        <button class="hot-chip" onclick="toast('Y2K 검색 중...')">Y2K</button>
+        <button class="hot-chip" onclick="toast('성수 팝업 검색 중...')">성수 팝업</button>
+        <button class="hot-chip" onclick="toast('버튜버 검색 중...')">버튜버</button>
+        <button class="hot-chip" onclick="toast('버블티 검색 중...')">버블티</button>
+        <button class="hot-chip" onclick="toast('짜파구리 검색 중...')">짜파구리</button>
+      </div>
+    </div>
+    <div>
+      <div class="sec-row" style="margin-bottom:10px"><div class="sec-title" style="font-size:14px">📂 카테고리 탐색</div></div>
+      <div class="cat-grid">
+        <div class="cgc" onclick="toast('패션 트렌드 로딩 중...')"><div class="cgc-icon">👗</div><div class="cgc-name">패션</div><div class="cgc-count">트렌드 38개</div></div>
+        <div class="cgc" onclick="toast('맛집 트렌드 로딩 중...')"><div class="cgc-icon">🍽</div><div class="cgc-name">맛집</div><div class="cgc-count">트렌드 27개</div></div>
+        <div class="cgc" onclick="toast('팝업 트렌드 로딩 중...')"><div class="cgc-icon">🏪</div><div class="cgc-name">팝업스토어</div><div class="cgc-count">트렌드 19개</div></div>
+        <div class="cgc" onclick="toast('음악 트렌드 로딩 중...')"><div class="cgc-icon">🎵</div><div class="cgc-name">음악</div><div class="cgc-count">트렌드 44개</div></div>
+        <div class="cgc" onclick="toast('밈 트렌드 로딩 중...')"><div class="cgc-icon">😂</div><div class="cgc-name">밈/인터넷문화</div><div class="cgc-count">트렌드 61개</div></div>
+        <div class="cgc" onclick="toast('뷰티 트렌드 로딩 중...')"><div class="cgc-icon">💄</div><div class="cgc-name">뷰티</div><div class="cgc-count">트렌드 22개</div></div>
+        <div class="cgc" onclick="toast('스포츠 트렌드 로딩 중...')"><div class="cgc-icon">⚽</div><div class="cgc-name">스포츠</div><div class="cgc-count">트렌드 31개</div></div>
+        <div class="cgc" onclick="toast('게임 트렌드 로딩 중...')"><div class="cgc-icon">🎮</div><div class="cgc-name">게임</div><div class="cgc-count">트렌드 17개</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="sec-row" style="margin-bottom:10px"><div class="sec-title" style="font-size:14px">⚡ 지금 급상승</div><div class="sec-count">실시간</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="mini-card" onclick="detail(1)"><div class="mini-rank">1</div><div class="mini-info"><div class="mini-name">먹태깡 챌린지</div><div class="mini-meta">📷 인스타 · ▶ 유튜브</div></div><div class="mini-cat">밈</div></div>
+        <div class="mini-card" onclick="detail(2)"><div class="mini-rank">2</div><div class="mini-info"><div class="mini-name">성수동 버블티 팝업 대란</div><div class="mini-meta">📷 인스타 · 𝕏 트위터</div></div><div class="mini-cat">팝업</div></div>
+        <div class="mini-card" onclick="detail(3)"><div class="mini-rank">3</div><div class="mini-info"><div class="mini-name">AI 버튜버 '하루' 데뷔</div><div class="mini-meta">▶ 유튜브 · 𝕏 트위터</div></div><div class="mini-cat">음악</div></div>
+        <div class="mini-card" onclick="detail(4)"><div class="mini-rank">4</div><div class="mini-info"><div class="mini-name">Y2K 나비핀 헤어 부활</div><div class="mini-meta">📷 인스타 · ▶ 유튜브</div></div><div class="mini-cat">패션</div></div>
+        <div class="mini-card" onclick="detail(5)"><div class="mini-rank">5</div><div class="mini-info"><div class="mini-name">짜파구리 2.0 레시피</div><div class="mini-meta">▶ 유튜브 · 📷 인스타</div></div><div class="mini-cat">맛집</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav(this,'s-home')"><span class="nav-ic">🏠</span><span>홈</span></div>
+    <div class="nav-item active" onclick="nav(this,'s-explore')"><span class="nav-ic">🔍</span><span>탐색</span></div>
+    <div class="nav-item" onclick="nav(this,'s-notif')"><span class="nav-ic">🔔</span><div class="nav-dot"></div><span>알림</span></div>
+    <div class="nav-item" onclick="toast('저장 기능은 준비 중이에요 🙏')"><span class="nav-ic">🔖</span><span>저장</span></div>
+    <div class="nav-item" onclick="toast('내 설정은 준비 중이에요 🙏')"><span class="nav-ic">👤</span><span>내 설정</span></div>
+  </div>
+</div>
+
+<!-- ▓▓▓▓▓▓▓▓▓▓ SCREEN: NOTIFICATION SETTINGS ▓▓▓▓▓▓▓▓▓▓ -->
+<div id="s-notif" class="screen">
+  <div class="sbar"><span>9:41</span><div class="sbar-r"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="go('s-home')">←</button>
+    <div class="sub-hdr-title">알림 설정</div>
+  </div>
+  <div class="notif-scroll">
+    <div class="set-card">
+      <div class="set-card-title">🔑 키워드 알림</div>
+      <div class="set-card-desc">관심 키워드가 트렌드로 뜨면 바로 알려드려요</div>
+      <div class="kw-input-row">
+        <input class="kw-input" id="kwIn" placeholder="키워드 입력 (예: 패션)">
+        <button class="kw-add-btn" onclick="addKw()">+ 추가</button>
+      </div>
+      <div class="kw-chips" id="kwChips">
+        <div class="kw-chip">패션 <button class="kw-rm" onclick="rmKw(this)">✕</button></div>
+        <div class="kw-chip">맛집 <button class="kw-rm" onclick="rmKw(this)">✕</button></div>
+        <div class="kw-chip">팝업 <button class="kw-rm" onclick="rmKw(this)">✕</button></div>
+      </div>
+    </div>
+    <div class="set-card">
+      <div class="set-card-title">⏰ 알림 시간대</div>
+      <div class="set-card-desc">하루 최대 3회 알림이 발송돼요</div>
+      <div class="time-opts">
+        <div class="time-opt sel" onclick="selTime(this)">
+          <div class="to-left"><div class="to-ic">🌅</div><div><div class="to-lbl">오전 8시</div><div class="to-sub">출근 전 오늘의 트렌드 브리핑</div></div></div>
+          <div class="to-radio"></div>
+        </div>
+        <div class="time-opt" onclick="selTime(this)">
+          <div class="to-left"><div class="to-ic">☀️</div><div><div class="to-lbl">점심 12시</div><div class="to-sub">점심 시간 트렌드 업데이트</div></div></div>
+          <div class="to-radio"></div>
+        </div>
+        <div class="time-opt" onclick="selTime(this)">
+          <div class="to-left"><div class="to-ic">🌙</div><div><div class="to-lbl">저녁 7시</div><div class="to-sub">퇴근 후 오늘 핫이슈 정리</div></div></div>
+          <div class="to-radio"></div>
+        </div>
+        <div class="time-opt" onclick="selTime(this)">
+          <div class="to-left"><div class="to-ic">⚡</div><div><div class="to-lbl">실시간</div><div class="to-sub">급상승 트렌드 즉시 알림</div></div></div>
+          <div class="to-radio"></div>
+        </div>
+      </div>
+    </div>
+    <div class="set-card">
+      <div class="set-card-title">🔔 알림 종류</div>
+      <div class="toggle-rows">
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-lbl">트렌드 알림 받기</div><div class="toggle-desc">전체 알림 ON/OFF</div></div><button class="toggle-sw on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-lbl">급상승 트렌드 알림</div><div class="toggle-desc">TOP 3 진입 시 즉시 알림</div></div><button class="toggle-sw on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-lbl">키워드 트렌드 알림</div><div class="toggle-desc">등록 키워드가 뜨면 알림</div></div><button class="toggle-sw on" onclick="this.classList.toggle('on')"></button></div>
+        <div class="toggle-row"><div class="toggle-info"><div class="toggle-lbl">마케팅 알림</div><div class="toggle-desc">이벤트·업데이트 소식</div></div><button class="toggle-sw" onclick="this.classList.toggle('on')"></button></div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="toast('알림 설정이 저장됐어요 ✅')">저장하기</button>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="nav(this,'s-home')"><span class="nav-ic">🏠</span><span>홈</span></div>
+    <div class="nav-item" onclick="nav(this,'s-explore')"><span class="nav-ic">🔍</span><span>탐색</span></div>
+    <div class="nav-item active" onclick="nav(this,'s-notif')"><span class="nav-ic">🔔</span><div class="nav-dot"></div><span>알림</span></div>
+    <div class="nav-item" onclick="toast('저장 기능은 준비 중이에요 🙏')"><span class="nav-ic">🔖</span><span>저장</span></div>
+    <div class="nav-item" onclick="toast('내 설정은 준비 중이에요 🙏')"><span class="nav-ic">👤</span><span>내 설정</span></div>
+  </div>
+</div>
+
+</div><!-- /phone -->
+
+<div class="tt-popup" id="ttp"><div class="tt-key" id="ttk"></div><div class="tt-desc" id="ttd"></div></div>
+<div class="toast" id="toastEl"></div>
+
+<script>
+/* ── Navigation ── */
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.add('active');
+  el.scrollTop = 0;
+}
+function nav(el, id) { go(id); }
+
+/* ── Toast ── */
+let toastTm;
+function toast(msg) {
+  const t = document.getElementById('toastEl');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTm);
+  toastTm = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ── Trend Data ── */
+const T = {
+  1: {
+    rank:'1위', cat:'밈/인터넷문화', name:'먹태깡 챌린지',
+    plat:[{ic:'📷',lb:'인스타그램',fire:'🔥🔥🔥',meta:'릴스 1억 뷰 · 게시물 12만 건'},{ic:'▶',lb:'유튜브',fire:'🔥🔥',meta:'관련 영상 누적 2,500만 뷰'}],
+    sum:['농심 신과자 먹태깡을 먹고 리액션 영상을 찍는 SNS 챌린지','유명 아이돌·유튜버 참여로 인스타 릴스 1억 뷰 돌파하며 급확산','"먹태깡 챌린지 봤어? 나도 해보고 싶더라"'],
+    react:[{pl:'인스타그램 베스트 댓글',tx:'진짜 먹어봤는데 완전 맛있음ㅋㅋ 편의점에 없어서 온라인 직구했어요',lk:'2.4만'},{pl:'유튜브 인기 댓글',tx:'우리 회사 팀장님도 올리셨는데... 세대 통합 챌린지임ㅋㅋㅋ',lk:'1.8만'},{pl:'트위터 인기 트윗',tx:'먹태깡 챌린지 따라하다 소파에 부스러기 다 떨어뜨림. 그래도 맛있었음',lk:'9.2천'}]
+  },
+  2: {
+    rank:'2위', cat:'팝업스토어', name:'성수동 버블티 팝업 대란',
+    plat:[{ic:'📷',lb:'인스타그램',fire:'🔥🔥🔥',meta:'인증샷 5만 건+ · 스토리 폭발'},{ic:'𝕏',lb:'트위터(X)',fire:'🔥',meta:'관련 트윗 3,200건'}],
+    sum:['대만 유명 버블티 브랜드의 국내 첫 팝업스토어가 성수동에 오픈','오픈 당일 3시간 대기줄, 인증샷 5만 건 이상 게시되며 성수 핫플 등극','"성수 버블티 팝업 가봤어? 줄이 너무 길어서 포기했어"'],
+    react:[{pl:'인스타그램 베스트 댓글',tx:'3시간 기다렸는데 진짜 맛있었어요... 값어치 함',lk:'1.2만'},{pl:'트위터 인기 트윗',tx:'성수동 또 새로운 팝업ㅋㅋ 이제 성수는 팝업의 성지가 됐음',lk:'8.7천'},{pl:'인스타그램 베스트 댓글',tx:'타피오카 식감이 다름!! 국내 버블티랑 비교 불가',lk:'6.1천'}]
+  },
+  3: {
+    rank:'3위', cat:'음악/엔터', name:"AI 버튜버 '하루' 데뷔",
+    plat:[{ic:'▶',lb:'유튜브',fire:'🔥🔥🔥',meta:'데뷔 24시간 구독자 50만 돌파'},{ic:'𝕏',lb:'트위터(X)',fire:'🔥🔥',meta:'트렌딩 키워드 3위 진입'}],
+    sum:['국내 최초 완전 AI 생성 버추얼 유튜버 "하루"가 유튜브 채널 개설 후 데뷔','데뷔 24시간 만에 구독자 50만 돌파, "AI인지 사람인지" 진위 논란 확산','"AI 버튜버 \'하루\' 알아? 목소리가 진짜 같아서 소름이야"'],
+    react:[{pl:'유튜브 인기 댓글',tx:'진짜 AI라고? 목소리 너무 자연스러운데... 소름 돋았어요',lk:'4.3만'},{pl:'트위터 인기 트윗',tx:'AI 버튜버가 이제 50만인데 인간 유튜버들 긴장해야 하는 거 아님?',lk:'2.1만'},{pl:'유튜브 인기 댓글',tx:'노래도 부르고 실시간 대화하는데 AI라니... 기술 발전 무섭다',lk:'1.5만'}]
+  },
+  4: {
+    rank:'4위', cat:'패션', name:'Y2K 나비핀 헤어 부활',
+    plat:[{ic:'📷',lb:'인스타그램',fire:'🔥🔥',meta:'#Y2K헤어 게시물 8만 건+'},{ic:'▶',lb:'유튜브',fire:'🔥🔥',meta:'헤어 튜토리얼 영상 1,000만 뷰'}],
+    sum:['2000년대 감성 Y2K 나비핀·볼록 포니테일 헤어스타일 재유행','인기 아이돌 컴백 무대 이후 헤어샵 예약 폭주, 나비핀 품절 대란까지','"Y2K 헤어 요즘 진짜 많이 하더라, 나도 한번 해볼까?"'],
+    react:[{pl:'인스타그램 베스트 댓글',tx:'나비핀이 이렇게 예뻤던가... 내일 당장 다이소 가야겠음',lk:'3.2만'},{pl:'유튜브 인기 댓글',tx:'2004년으로 돌아간 느낌ㅋㅋㅋ 그때 유행이 또 돌아왔네',lk:'1.9만'},{pl:'인스타그램 베스트 댓글',tx:'볼록 포니는 얼굴이 작아 보이는 효과 있어서 진짜 추천',lk:'7.8천'}]
+  },
+  5: {
+    rank:'5위', cat:'맛집', name:'짜파구리 2.0 레시피',
+    plat:[{ic:'▶',lb:'유튜브',fire:'🔥🔥',meta:'관련 영상 누적 500만 뷰'},{ic:'📷',lb:'인스타그램',fire:'🔥',meta:'레시피 릴스 2만 건+'}],
+    sum:['짜파구리에 특제 재료를 추가하는 업그레이드 레시피 숏츠 확산','유명 먹방 유튜버 영상 500만 뷰 돌파, "더 맛있는 짜파구리" 레시피 논쟁 중','"짜파구리 2.0 알아? 거기다 치즈 올리면 진짜 맛있대"'],
+    react:[{pl:'유튜브 인기 댓글',tx:'치즈 + 계란 노른자 추가하면 진짜 말도 안 되게 맛있음... 살쪘음',lk:'5.6만'},{pl:'인스타그램 베스트 댓글',tx:'기생충에서 처음 봤을 때부터 만들어봤는데 2.0 버전이 더 맛있는 거 맞음',lk:'2.3만'},{pl:'유튜브 인기 댓글',tx:'라면에 이렇게 공을 들이는 사람들이 있다는 게 신기함ㅋㅋ 그래도 맛있겠다',lk:'1.1만'}]
+  }
+};
+
+function detail(id) {
+  const t = T[id]; if (!t) return;
+  document.getElementById('d-rank').textContent = t.rank;
+  document.getElementById('d-cat').textContent = t.cat;
+  document.getElementById('d-name').textContent = t.name;
+  document.getElementById('d-pbs').innerHTML = t.plat.map(p =>
+    `<div class="detail-pb" onclick="toast('${p.lb} 원문으로 이동합니다 →')">${p.ic} ${p.lb} ${p.fire}</div>`
+  ).join('');
+  document.getElementById('d-sum').innerHTML =
+    `<div class="d-line"><div class="d-num dn1">1</div><div class="d-text">${t.sum[0]}</div></div>
+     <div class="d-line"><div class="d-num dn2">2</div><div class="d-text">${t.sum[1]}</div></div>
+     <div class="d-line tip"><span class="d-tip-ic">💬</span><div class="d-text">${t.sum[2]}</div></div>`;
+  document.getElementById('d-plinks').innerHTML = t.plat.map(p =>
+    `<div class="plink-item"><div class="pli-icon">${p.ic}</div><div class="pli-info"><div class="pli-name">${p.lb} ${p.fire}</div><div class="pli-meta">${p.meta}</div></div><button class="pli-btn" onclick="toast('${p.lb} 원문으로 이동합니다 →')">원문 보기</button></div>`
+  ).join('');
+  document.getElementById('d-reacts').innerHTML = t.react.map(r =>
+    `<div class="react-item"><div class="ri-plat">${r.pl}</div><div class="ri-text">${r.tx}</div><div class="ri-foot"><span>👍</span><span class="ri-likes">${r.lk}</span></div></div>`
+  ).join('');
+  go('s-detail');
+}
+
+/* ── Home category filter ── */
+document.querySelectorAll('#homeCats .cat-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('#homeCats .cat-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    const cat = c.dataset.cat;
+    let vis = 0;
+    document.querySelectorAll('#homeArea .trend-card').forEach(card => {
+      const show = cat === 'all' || (card.dataset.cats||'').split(' ').includes(cat);
+      card.style.display = show ? '' : 'none';
+      if (show) vis++;
+    });
+    document.getElementById('homeEmpty').style.display = vis === 0 ? 'block' : 'none';
+  });
+});
+
+/* ── Onboarding ── */
+const sel = new Set();
+document.querySelectorAll('.onb-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const k = tag.dataset.tag;
+    if (sel.has(k)) { sel.delete(k); tag.classList.remove('sel'); }
+    else if (sel.size < 5) { sel.add(k); tag.classList.add('sel'); }
+    else { toast('최대 5개까지 선택할 수 있어요'); return; }
+    document.getElementById('onbCnt').textContent = sel.size;
+    document.getElementById('onbCta').classList.toggle('on', sel.size > 0);
+  });
+});
+
+/* ── Tooltip ── */
+const ttp = document.getElementById('ttp');
+let ttTm;
+document.addEventListener('click', e => {
+  const w = e.target.closest('.tw');
+  if (w) {
+    e.stopPropagation(); clearTimeout(ttTm);
+    document.getElementById('ttk').textContent = w.dataset.key;
+    document.getElementById('ttd').textContent = w.dataset.desc;
+    const r = w.getBoundingClientRect(), W = 250, mg = 12;
+    let left = r.left;
+    if (left + W > window.innerWidth - mg) left = window.innerWidth - W - mg;
+    if (left < mg) left = mg;
+    ttp.style.left = left + 'px';
+    ttp.style.top = (r.top - 82) + 'px';
+    ttp.classList.add('show');
+    ttTm = setTimeout(() => ttp.classList.remove('show'), 3200);
+  } else if (!e.target.closest('.tt-popup')) {
+    ttp.classList.remove('show'); clearTimeout(ttTm);
+  }
+});
+
+/* ── Notif: Keywords ── */
+function addKw() {
+  const inp = document.getElementById('kwIn'), v = inp.value.trim();
+  if (!v) return;
+  const chip = document.createElement('div');
+  chip.className = 'kw-chip';
+  chip.innerHTML = `${v} <button class="kw-rm" onclick="rmKw(this)">✕</button>`;
+  document.getElementById('kwChips').appendChild(chip);
+  inp.value = '';
+  toast(`"${v}" 키워드 추가됐어요 ✅`);
+}
+function rmKw(btn) { btn.closest('.kw-chip').remove(); }
+document.getElementById('kwIn').addEventListener('keydown', e => { if (e.key === 'Enter') addKw(); });
+
+/* ── Notif: Time ── */
+function selTime(el) {
+  document.querySelectorAll('.time-opt').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+}
+</script>
+</body>
+</html>
